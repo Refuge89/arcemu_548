@@ -318,8 +318,8 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 	 /*for(uint32 i = 0; i < addonSize; i++)
          recvPacket->read<uint8>();*/
 
-		recvPacket->readBit();
-		uint32 accountNameLength = recvPacket->readBits(12);
+		recvPacket->ReadBit();
+		uint32 accountNameLength = recvPacket->ReadBits(12);
 		account = recvPacket->ReadString(accountNameLength);
 
 		//printf("DONE! -- Got account name: %s\n", account.c_str());
@@ -550,8 +550,8 @@ void WorldSocket::Authenticate()
 
 	WorldPacket data(SMSG_AUTH_RESPONSE, 17); // 17 + 4 if in queue
 
-	data.writeBit(false);
-	data.writeBit(true);
+	data.WriteBit(false);
+	data.WriteBit(true);
 
 	data << uint32(0);                                   // BillingTimeRemaining
     data << uint8(3);                          // 0 - normal, 1 - TBC, 2 - WOTLK, 3 - CATA; must be set in database manually for each account
@@ -586,9 +586,9 @@ void WorldSocket::UpdateQueuePosition(uint32 Position)
 	//printf("UpdateQueuePosition gets executed!!\n");
 	WorldPacket QueuePacket(SMSG_AUTH_RESPONSE, 21); // 17 + 4 if queued
 
-	QueuePacket.writeBit(true);                                  // has queue
-    QueuePacket.writeBit(false);                                 // unk queue-related
-    QueuePacket.writeBit(true);                                  // has account data
+	QueuePacket.WriteBit(true);                                  // has queue
+    QueuePacket.WriteBit(false);                                 // unk queue-related
+    QueuePacket.WriteBit(true);                                  // has account data
 
     QueuePacket << uint32(0);                                    // Unknown - 4.3.2
     QueuePacket << uint8(3);                     // 0 - normal, 1 - TBC, 2 - WotLK, 3 - CT. must be set in database manually for each account
@@ -743,8 +743,8 @@ void WorldSocket::HandleWoWConnection(WorldPacket* recvPacket)
 void WorldSocket::SendAuthResponseError(uint8 code)
 {
 	WorldPacket packet(SMSG_AUTH_RESPONSE, 1);
-	packet.writeBit(0);      // has queue info
-	packet.writeBit(0);      // has account info
+	packet.WriteBit(0);      // has queue info
+	packet.WriteBit(0);      // has account info
 	packet << uint8(code);   // the error code
 	
 	SendPacket(&packet);
