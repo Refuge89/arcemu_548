@@ -1080,10 +1080,9 @@ void WorldSession::HandleUpdateAccountData(WorldPacket & recv_data)
 	LOG_DETAIL("WORLD: Received CMSG_UPDATE_ACCOUNT_DATA");
 
 	uint32 uiID;
+    uint32 timestamp;
 	if(!sWorld.m_useAccountData)
 		return;
-
-	uint32 timestamp;
 
 	recv_data >> uiID;
 	recv_data >> timestamp; // what do we do with this? :D

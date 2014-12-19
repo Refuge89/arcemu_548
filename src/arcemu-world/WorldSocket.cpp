@@ -270,6 +270,7 @@ void WorldSocket::OnConnectTwo()
 
 	packet << uint8(1);
 	packet << uint32(mSeed);
+
 	SendPacket(&packet);
 }
 

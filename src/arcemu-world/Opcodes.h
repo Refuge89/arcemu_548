@@ -23,7 +23,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 /////                     Opcodes for Client Build:                    //////
-/////                            5.4.8 18414                           //////
+/////                            18414                           //////
 /////////////////////////////////////////////////////////////////////////////
 
 enum Opcodes
@@ -85,15 +85,15 @@ enum Opcodes
 	CMSG_AUTH_SRP6_PROOF							= 0x0000,
 	CMSG_AUTH_SRP6_RECODE							= 0x0000,
 
-	CMSG_CHAR_CREATE								= 0x0000,
-	CMSG_CHAR_ENUM									= 0x0000,
-	CMSG_CHAR_DELETE								= 0x0000,
+	CMSG_CHAR_CREATE								= 0x0F1D, // 18414
+	CMSG_CHAR_ENUM									= 0x00E0, // 18414
+	CMSG_CHAR_DELETE								= 0x04E2, // 18414
 
 	SMSG_AUTH_SRP6_RESPONSE							= 0x0000,
 
-	SMSG_CHAR_CREATE								= 0x0000,
-	SMSG_CHAR_ENUM									= 0x0000,
-	SMSG_CHAR_DELETE								= 0x0000,
+	SMSG_CHAR_CREATE								= 0x1CAA, // 18414
+	SMSG_CHAR_ENUM									= 0x11C3, // 18414
+	SMSG_CHAR_DELETE								= 0x0C9F, // 18414
 	CMSG_PLAYER_LOGIN								= 0x0000,
 	SMSG_NEW_WORLD									= 0x0000,
 	SMSG_TRANSFER_PENDING							= 0x0000,
@@ -529,9 +529,9 @@ enum Opcodes
     MSG_GM_SUMMON                                   = 0x1E9,	// GM client only
     SMSG_ITEM_TIME_UPDATE                           = 0x2407,	// 15595
     SMSG_ITEM_ENCHANT_TIME_UPDATE                   = 0x1EB,	// implemented
-	SMSG_AUTH_CHALLENGE								= 0x0949,	// 5.4.8 18414
-	CMSG_AUTH_SESSION								= 0x00B2,	// 5.4.8 18414
-    SMSG_AUTH_RESPONSE                              = 0x5DB6,	// 15595
+	SMSG_AUTH_CHALLENGE								= 0x0949,	// 18414
+	CMSG_AUTH_SESSION								= 0x00B2,	// 18414
+    SMSG_AUTH_RESPONSE                              = 0x0ABA,	// 18414
     MSG_GM_SHOWLABEL                                = 0x1EF,	// GM client only
     CMSG_PET_CAST_SPELL                             = 0x1F0,	// implemented
     MSG_SAVE_GUILD_EMBLEM                           = 0x1F1,	// implemented
@@ -558,7 +558,7 @@ enum Opcodes
     SMSG_GMTICKET_CREATE                            = 0x206,	// implemented
     CMSG_GMTICKET_UPDATETEXT                        = 0x207,	// implemented
     SMSG_GMTICKET_UPDATETEXT                        = 0x208,	// implemented
-	SMSG_ACCOUNT_DATA_TIMES							= 0x162B,	// 5.4.8 18414
+	SMSG_ACCOUNT_DATA_TIMES							= 0x162B,	// 18414
     CMSG_REQUEST_ACCOUNT_DATA                       = 0x20A,	// implemented
     CMSG_UPDATE_ACCOUNT_DATA                        = 0x4736,	// 15595
     SMSG_UPDATE_ACCOUNT_DATA                        = 0x6837,	// 15595
@@ -1232,7 +1232,7 @@ enum Opcodes
 	CMSG_PLAYER_VEHICLE_ENTER                       = 0x4A8,	/// TODO: investigate, cmsg uint64
 	CMSG_EJECT_PASSENGER                            = 0x4A9,	/// TODO: investigate, cmsg uint64
     SMSG_PET_GUIDS                                  = 0x4AA,	/// TODO: implement
-	SMSG_CLIENTCACHE_VERSION						= 0x002A,	//5.4.8 18414
+	SMSG_CLIENTCACHE_VERSION						= 0x002A,	//18414
     UMSG_UNKNOWN_1196                               = 0x4AC,	/// TODO: investigate
     UMSG_UNKNOWN_1197                               = 0x4AD,	/// TODO: investigate
     UMSG_UNKNOWN_1198                               = 0x4AE,	/// TODO: investigate
