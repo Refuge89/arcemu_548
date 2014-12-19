@@ -22,7 +22,7 @@
 // reading/writing of all packets.
 
 #ifndef __WORLDSOCKET_H
-#define __WORLDSOCKET_Hz
+#define __WORLDSOCKET_H
 
 #define WORLDSOCKET_SENDBUF_SIZE 131078
 #define WORLDSOCKET_RECVBUF_SIZE 16384
