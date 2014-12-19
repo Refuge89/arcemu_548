@@ -510,7 +510,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	if (sWorld.GetSessionCount() >= SESSION_CAP)
 	{
 		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x0D");
-		AUTH_FAILEDSendAuthResponseError(AUTH_FAILED);
+		SendAuthResponseError(AUTH_FAILED);
 		Disconnect();
 		return;
 	}
@@ -545,7 +545,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 
 }
 
-void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos) //Done for 5.4.8 18414
+void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos)
 {
 	LOG_ERROR("We're authenticating baby!\n");
 	ARCEMU_ASSERT(pAuthenticationPacket != NULL);
@@ -659,6 +659,7 @@ void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos) //Done 
 
 void WorldSocket::UpdateQueuePosition(uint32 Position)
 {
+    // todo update structure to 5.4.8 18414
 	LOG_ERROR("UpdateQueuePosition gets executed!!\n");
 	WorldPacket QueuePacket(SMSG_AUTH_RESPONSE, 21); // 17 + 4 if queued
 
