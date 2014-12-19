@@ -21,175 +21,173 @@
 #ifndef _OPCODES_H
 #define _OPCODES_H
 
-// NOTE: All SERVER opcodes are now uint16's, as of patch 4 (3807/0.9.0)
-//		Client opcodes are still uint32 as far as we know.
-//3.0.2 client opcodes
-
-// NOTE: All opcodes commented with 15595 are updated to patch 4.3.4 build 15595 and are implemented
-//!!! ToDo: cleanup, remove old && unused opcodes. It's a mess ;(
+/////////////////////////////////////////////////////////////////////////////
+/////                     Opcodes for Client Build:                    //////
+/////                            5.4.8 18414                           //////
+/////////////////////////////////////////////////////////////////////////////
 
 enum Opcodes
 {
-    MSG_NULL_ACTION                                 = 0x000,
-    CMSG_BOOTME                                     = 0x001,	// not used in client
-    CMSG_DBLOOKUP                                   = 0x002,	// not used in client
-    SMSG_DBLOOKUP                                   = 0x003,	// not used in client
-    CMSG_QUERY_OBJECT_POSITION                      = 0x004,	// not used in client
-    SMSG_QUERY_OBJECT_POSITION                      = 0x005,	// not used in client
-    CMSG_QUERY_OBJECT_ROTATION                      = 0x006,	// not used in client
-    SMSG_QUERY_OBJECT_ROTATION                      = 0x007,	// not used in client
+	MSG_NULL_ACTION									= 0x0000,
+    CMSG_BOOTME                                     = 0x0000,
+	CMSG_DBLOOKUP								    = 0x0000,
+	SMSG_DBLOOKUP									= 0x0000,
+	CMSG_QUERY_OBJECT_POSITION						= 0x0000,
+	SMSG_QUERY_OBJECT_POSITION						= 0x0000,
+	CMSG_QUERY_OBJECT_ROTATION						= 0x0000,
+	SMSG_QUERY_OBJECT_ROTATION						= 0x0000,
 
-    CMSG_WORLD_TELEPORT                             = 0x24B2,	// implemented
-    CMSG_TELEPORT_TO_UNIT                           = 0x4206,	// implemented
+	CMSG_WORLD_TELEPORT								= 0x0000,
+	CMSG_TELEPORT_TO_UNIT							= 0x0000,
 
-    CMSG_ZONE_MAP                                   = 0x00A,	// GM client only
-    SMSG_ZONE_MAP                                   = 0x00B,	// GM client only
-    CMSG_DEBUG_CHANGECELLZONE                       = 0x00C,	// development client only
-    CMSG_MOVE_CHARACTER_CHEAT                       = 0x00D,	// GM client only
-    SMSG_MOVE_CHARACTER_CHEAT                       = 0x00E,	// GM client only
-    CMSG_RECHARGE                                   = 0x00F,	// GM client only
-    CMSG_LEARN_SPELL                                = 0x010,	// GM client only
-    CMSG_CREATEMONSTER                              = 0x011,	// GM client only
-    CMSG_DESTROYMONSTER                             = 0x012,	// GM client only
-    CMSG_CREATEITEM                                 = 0x013,	// GM client only
-    CMSG_CREATEGAMEOBJECT                           = 0x014,	// GM client only
-    SMSG_CHECK_FOR_BOTS                             = 0x015,	/// TODO: investigate
-    CMSG_MAKEMONSTERATTACKGUID                      = 0x016,	// GM client only
-    CMSG_BOT_DETECTED2                              = 0x017,	/// TODO: investigate
-    CMSG_FORCEACTION                                = 0x018,	// GM client only
-    CMSG_FORCEACTIONONOTHER                         = 0x019,	// GM client only
-    CMSG_FORCEACTIONSHOW                            = 0x01A,	// GM client only
-    SMSG_FORCEACTIONSHOW                            = 0x01B,	// handled, but unused.
-    CMSG_PETGODMODE                                 = 0x01C,	// GM client only
-    SMSG_PETGODMODE                                 = 0x01D,	/// TODO: implement
-    SMSG_REFER_A_FRIEND_EXPIRED                     = 0x01E,	/// TODO: implement
-    CMSG_WEATHER_SPEED_CHEAT                        = 0x01F,	// not used in client
-    CMSG_UNDRESSPLAYER                              = 0x020,	// not used in client
-    CMSG_BEASTMASTER                                = 0x021,	// not used in client
-    CMSG_GODMODE                                    = 0x022,	// GM client only
-    SMSG_GODMODE                                    = 0x023,	/// TODO: implement
-    CMSG_CHEAT_SETMONEY                             = 0x024,	// GM client only
-    CMSG_LEVEL_CHEAT                                = 0x025,	// GM client only
-    CMSG_PET_LEVEL_CHEAT                            = 0x026,	// GM client only
-    CMSG_SET_WORLDSTATE                             = 0x027,	// GM client only
-    CMSG_COOLDOWN_CHEAT                             = 0x028,	// GM client only
-    CMSG_USE_SKILL_CHEAT                            = 0x029,	// GM client only
-    CMSG_FLAG_QUEST                                 = 0x02A,	// GM client only
-    CMSG_FLAG_QUEST_FINISH                          = 0x02B,	// GM client only
-    CMSG_CLEAR_QUEST                                = 0x02C,	// GM client only
-    CMSG_SEND_EVENT                                 = 0x02D,	// GM client only
-    CMSG_DEBUG_AISTATE                              = 0x02E,	// development client only
-    SMSG_DEBUG_AISTATE                              = 0x02F,	// development client only
-    CMSG_DISABLE_PVP_CHEAT                          = 0x030,	// GM client only
-    CMSG_ADVANCE_SPAWN_TIME                         = 0x031,	// GM client only
-    SMSG_DESTRUCTIBLE_BUILDING_DAMAGE               = 0x032,	/// TODO: implement
-    CMSG_AUTH_SRP6_BEGIN                            = 0x033,	// not used in client, really?
-    CMSG_AUTH_SRP6_PROOF                            = 0x034,	// not used in client, really?
-    CMSG_AUTH_SRP6_RECODE                           = 0x035,	// not used in client, really?
+	CMSG_ZONE_MAP									= 0x0000,
+	SMSG_ZONE_MAP									= 0x0000,
+	CMSG_DEBUG_CHANGECELLZONE						= 0x0000,
+	CMSG_MOVE_CHARACTER_CHEAT						= 0x0000,
+	SMSG_MOVE_CHARACTER_CHEAT						= 0x0000,
+	CMSG_RECHARGE									= 0x0000,
+	CMSG_LEARN_SPELL								= 0x0000,
+	CMSG_CREATEMONSTER								= 0x0000,
+	CMSG_DESTROYMONSTER								= 0x0000,
+	CMSG_CREATEITEM									= 0x0000,
+	CMSG_CREATEGAMEOBJECT							= 0x0000,
+	SMSG_CHECK_FOR_BOTS								= 0x0000,
+	CMSG_MAKEMONSTERATTACKGUID						= 0x0000,
+	CMSG_BOT_DETECTED2								= 0x0000,
+	CMSG_FORCEACTION								= 0x0000,
+	CMSG_FORCEACTIONONOTHER							= 0x0000,
+	CMSG_FORCEACTIONSHOW							= 0x0000,
+	SMSG_FORCEACTIONSHOW							= 0x0000,
+	CMSG_PETGODMODE									= 0x0000,
+	SMSG_PETGODMODE									= 0x0000,
+	SMSG_REFER_A_FRIEND_EXPIRED						= 0x0000,
+	CMSG_WEATHER_SPEED_CHEAT						= 0x0000,
+	CMSG_UNDRESSPLAYER								= 0x0000,
+	CMSG_BEASTMASTER								= 0x0000,
+	CMSG_GODMODE									= 0x0000,
+	SMSG_GODMODE									= 0x0000,
+	CMSG_CHEAT_SETMONEY								= 0x0000,
+	CMSG_LEVEL_CHEAT								= 0x0000,
+	CMSG_PET_LEVEL_CHEAT							= 0x0000,
+	CMSG_SET_WORLDSTATE								= 0x0000,
+	CMSG_COOLDOWN_CHEAT								= 0x0000,
+	CMSG_USE_SKILL_CHEAT							= 0x0000,
+	CMSG_FLAG_QUEST									= 0x0000,
+	CMSG_FLAG_QUEST_FINISH							= 0x0000,
+	CMSG_CLEAR_QUEST								= 0x0000,
+	CMSG_SEND_EVENT									= 0x0000,
+	CMSG_DEBUG_AISTATE								= 0x0000,
+	SMSG_DEBUG_AISTATE								= 0x0000,
+	CMSG_DISABLE_PVP_CHEAT							= 0x0000,
+	CMSG_ADVANCE_SPAWN_TIME							= 0x0000,
+	SMSG_DESTRUCTIBLE_BUILDING_DAMAGE				= 0x0000,
+	CMSG_AUTH_SRP6_BEGIN							= 0x0000,
+	CMSG_AUTH_SRP6_PROOF							= 0x0000,
+	CMSG_AUTH_SRP6_RECODE							= 0x0000,
 
-    CMSG_CHAR_CREATE                                = 0x4A36,	// 15595 
-    CMSG_CHAR_ENUM                                  = 0x0502,	// 15595
-    CMSG_CHAR_DELETE                                = 0x6425,	// 15595
+	CMSG_CHAR_CREATE								= 0x0000,
+	CMSG_CHAR_ENUM									= 0x0000,
+	CMSG_CHAR_DELETE								= 0x0000,
 
-    SMSG_AUTH_SRP6_RESPONSE                         = 0x039,	// not used in client, really? -- is it here in 4.3.4?
+	SMSG_AUTH_SRP6_RESPONSE							= 0x0000,
 
-    SMSG_CHAR_CREATE                                = 0x2D05,	// 15595
-    SMSG_CHAR_ENUM                                  = 0x10B0,	// 15595
-    SMSG_CHAR_DELETE                                = 0x0304,	// 15595
-    CMSG_PLAYER_LOGIN                               = 0x05B1,	// 15595
-    SMSG_NEW_WORLD                                  = 0x79B1,	// 15595
-    SMSG_TRANSFER_PENDING                           = 0x18A6,	// 15595
-    SMSG_TRANSFER_ABORTED                           = 0x0537,	// 15595
-    SMSG_CHARACTER_LOGIN_FAILED                     = 0x4417,	// 15595
-    SMSG_LOGIN_SETTIMESPEED                         = 0x4D15,	// 15595
+	SMSG_CHAR_CREATE								= 0x0000,
+	SMSG_CHAR_ENUM									= 0x0000,
+	SMSG_CHAR_DELETE								= 0x0000,
+	CMSG_PLAYER_LOGIN								= 0x0000,
+	SMSG_NEW_WORLD									= 0x0000,
+	SMSG_TRANSFER_PENDING							= 0x0000,
+	SMSG_TRANSFER_ABORTED							= 0x0000,
+	SMSG_CHARACTER_LOGIN_FAILED						= 0x0000,
+	SMSG_LOGIN_SETTIMESPEED							= 0x0000,
 
-    SMSG_GAMETIME_UPDATE                            = 0x4127,	/// TODO: implement
-    CMSG_GAMETIME_SET                               = 0x044,	// not used in client
-    SMSG_GAMETIME_SET                               = 0x045,	/// TODO: implement
-    CMSG_GAMESPEED_SET                              = 0x046,	// not used in client
-    SMSG_GAMESPEED_SET                              = 0x047,	/// TODO: implement
-    CMSG_SERVERTIME                                 = 0x048,	// not used in client
-    SMSG_SERVERTIME                                 = 0x049,	/// TODO: implement
+	SMSG_GAMETIME_UPDATE							= 0x0000,
+	CMSG_GAMETIME_SET								= 0x0000,
+	SMSG_GAMETIME_SET								= 0x0000,
+	CMSG_GAMESPEED_SET								= 0x0000,
+	SMSG_GAMESPEED_SET								= 0x0000,
+	CMSG_SERVERTIME									= 0x0000,
+	SMSG_SERVERTIME									= 0x0000,
 
-    CMSG_PLAYER_LOGOUT                              = 0x04A,	// not 15595
-    CMSG_LOGOUT_REQUEST                             = 0x0A25,	// 15595
-    SMSG_LOGOUT_RESPONSE                            = 0x0524,	// 15595
-    SMSG_LOGOUT_COMPLETE                            = 0x2137,	// 15595
-    CMSG_LOGOUT_CANCEL                              = 0x04E,	// 15595
-    SMSG_LOGOUT_CANCEL_ACK                          = 0x04F,	// 15595
-    CMSG_NAME_QUERY                                 = 0x2224,	// implemented
-    SMSG_NAME_QUERY_RESPONSE                        = 0x6E04,	// implemented
-    CMSG_PET_NAME_QUERY                             = 0x6F24,	// implemented
-    SMSG_PET_NAME_QUERY_RESPONSE                    = 0x4C37,	// implemented
-    CMSG_GUILD_QUERY                                = 0x1030,	// implemented
-    SMSG_GUILD_QUERY_RESPONSE                       = 0x0E06,	// implemented
+	CMSG_PLAYER_LOGOUT								= 0x0000,
+	CMSG_LOGOUT_REQUEST								= 0x0000,
+	SMSG_LOGOUT_RESPONSE							= 0x0000,
+	SMSG_LOGOUT_COMPLETE							= 0x0000,
+	CMSG_LOGOUT_CANCEL								= 0x0000,
+	SMSG_LOGOUT_CANCEL_ACK							= 0x0000,
+	CMSG_NAME_QUERY									= 0x0000,
+	SMSG_NAME_QUERY_RESPONSE						= 0x0000,
+	CMSG_PET_NAME_QUERY								= 0x0000,
+	SMSG_PET_NAME_QUERY_RESPONSE					= 0x0000,
+	CMSG_GUILD_QUERY								= 0x0000,
+	SMSG_GUILD_QUERY_RESPONSE						= 0x0000,
 
-	// not in cata
-    CMSG_ITEM_QUERY_SINGLE                          = 0x056,	// implemented
-    CMSG_ITEM_QUERY_MULTIPLE                        = 0x057,	// not used in client
-    SMSG_ITEM_QUERY_SINGLE_RESPONSE                 = 0x058,	// implemented
-    SMSG_ITEM_QUERY_MULTIPLE_RESPONSE               = 0x059,	/// (TODO: implement)
+	
+	CMSG_ITEM_QUERY_SINGLE							= 0x0000,
+	CMSG_ITEM_QUERY_MULTIPLE						= 0x0000,
+	SMSG_ITEM_QUERY_SINGLE_RESPONSE					= 0x0000,
+	SMSG_ITEM_QUERY_MULTIPLE_RESPONSE				= 0x0000,
 
-    CMSG_PAGE_TEXT_QUERY                            = 0x6614,	// implemented
-    SMSG_PAGE_TEXT_QUERY_RESPONSE                   = 0x2B14,	// implemented
-    CMSG_QUEST_QUERY                                = 0x0D06,	// implemented
-    SMSG_QUEST_QUERY_RESPONSE                       = 0x6936,	// implemented
+	CMSG_PAGE_TEXT_QUERY							= 0x0000,
+	SMSG_PAGE_TEXT_QUERY_RESPONSE					= 0x0000,
+	CMSG_QUEST_QUERY								= 0x0000,
+	SMSG_QUEST_QUERY_RESPONSE						= 0x0000,
 
-    CMSG_GAMEOBJECT_QUERY                           = 0x4017,	// 15595
-    SMSG_GAMEOBJECT_QUERY_RESPONSE                  = 0x0915,	// 15595
-    CMSG_CREATURE_QUERY                             = 0x2706,	// 15595
-    SMSG_CREATURE_QUERY_RESPONSE                    = 0x6024,	// 15595
-    CMSG_WHO                                        = 0x6C15,	// 15595
-    SMSG_WHO                                        = 0x6907,	// 15595
-    CMSG_WHOIS                                      = 0x6B05,	//!!! IMPLEMENT THIS (opcode 15595)
-    SMSG_WHOIS                                      = 0x6917,	//!!! IMPLEMENT THIS (opcode 15595)
-    CMSG_CONTACT_LIST                               = 0x4534,	// 15595 should work
-    SMSG_CONTACT_LIST                               = 0x6017,	// 15595 should work
-    SMSG_FRIEND_STATUS                              = 0x0717,	// 15595 should work
-    CMSG_ADD_FRIEND                                 = 0x6527,	// 15595
-    CMSG_DEL_FRIEND                                 = 0x6A15,	// 15595
-    CMSG_SET_CONTACT_NOTES                          = 0x06B,	// implemented (Commented in WorldSession.cpp, why ?)
-    CMSG_ADD_IGNORE                                 = 0x4726,	// 15595
-    CMSG_DEL_IGNORE                                 = 0x6D26,	// 15595
-    CMSG_GROUP_INVITE                               = 0x06E,	// implemented
-    SMSG_GROUP_INVITE                               = 0x06F,	// implemented
-    CMSG_GROUP_CANCEL                               = 0x070,	// implemented
-    SMSG_GROUP_CANCEL                               = 0x071,	/// TODO: implement
-    CMSG_GROUP_ACCEPT                               = 0x072,	// implemented
-    CMSG_GROUP_DECLINE                              = 0x073,	// implemented
-    SMSG_GROUP_DECLINE                              = 0x074,	// implemented
-    CMSG_GROUP_UNINVITE                             = 0x075,	// implemented
-    CMSG_GROUP_UNINVITE_GUID                        = 0x076,	// implemented
-    SMSG_GROUP_UNINVITE                             = 0x077,	// implemented
-    CMSG_GROUP_SET_LEADER                           = 0x078,	// implemented
-    SMSG_GROUP_SET_LEADER                           = 0x079,	// implemented
-    CMSG_LOOT_METHOD                                = 0x07A,	// implemented
-    CMSG_GROUP_DISBAND                              = 0x07B,	// implemented
-    SMSG_GROUP_DESTROYED                            = 0x07C,	// implemented
-    SMSG_GROUP_LIST                                 = 0x07D,	// implemented
-    SMSG_PARTY_MEMBER_STATS                         = 0x07E,	// implemented
-    SMSG_PARTY_COMMAND_RESULT                       = 0x07F,	// implemented
-    UMSG_UPDATE_GROUP_MEMBERS                       = 0x080,	// not used in client
-    CMSG_GUILD_CREATE                               = 0x081,	// implemented
-    CMSG_GUILD_INVITE                               = 0x082,	// implemented
-    SMSG_GUILD_INVITE                               = 0x083,	// implemented
-    CMSG_GUILD_ACCEPT                               = 0x084,	// implemented
-    CMSG_GUILD_DECLINE                              = 0x085,	// implemented
-    SMSG_GUILD_DECLINE                              = 0x086,	// implemented
-    CMSG_GUILD_INFO                                 = 0x087,	// implemented
-    SMSG_GUILD_INFO                                 = 0x088,	// implemented
-    CMSG_GUILD_ROSTER                               = 0x089,	// implemented
-    SMSG_GUILD_ROSTER                               = 0x08A,	// implemented
-    CMSG_GUILD_PROMOTE                              = 0x08B,	// implemented
-    CMSG_GUILD_DEMOTE                               = 0x08C,	// implemented
-    CMSG_GUILD_LEAVE                                = 0x08D,	// implemented
-    CMSG_GUILD_REMOVE                               = 0x08E,	// implemented
-    CMSG_GUILD_DISBAND                              = 0x08F,	// implemented
-    CMSG_GUILD_LEADER                               = 0x090,	// implemented
-    CMSG_GUILD_MOTD                                 = 0x091,	// implemented
-    SMSG_GUILD_EVENT                                = 0x0705,	// 15595              NOT SURE
-    SMSG_GUILD_COMMAND_RESULT                       = 0x093,	// implemented
-    UMSG_UPDATE_GUILD                               = 0x094,	// not used in client
+	CMSG_GAMEOBJECT_QUERY							= 0x0000,
+	SMSG_GAMEOBJECT_QUERY_RESPONSE					= 0x0000,
+	CMSG_CREATURE_QUERY								= 0x0000,
+	SMSG_CREATURE_QUERY_RESPONSE					= 0x0000,
+	CMSG_WHO										= 0x0000,
+	SMSG_WHO										= 0x0000,
+	CMSG_WHOIS										= 0x0000,
+	SMSG_WHOIS										= 0x0000,
+	CMSG_CONTACT_LIST								= 0x0000,
+	SMSG_CONTACT_LIST								= 0x0000,
+	SMSG_FRIEND_STATUS								= 0x0000,
+	CMSG_ADD_FRIEND									= 0x0000,
+	CMSG_DEL_FRIEND									= 0x0000,
+	CMSG_SET_CONTACT_NOTES							= 0x0000,
+	CMSG_ADD_IGNORE									= 0x0000,
+	CMSG_DEL_IGNORE									= 0x0000,
+	CMSG_GROUP_INVITE								= 0x0000,
+	SMSG_GROUP_INVITE								= 0x0000,
+	CMSG_GROUP_CANCEL								= 0x0000,
+	SMSG_GROUP_CANCEL								= 0x0000,
+	CMSG_GROUP_ACCEPT								= 0x0000,
+	CMSG_GROUP_DECLINE								= 0x0000,
+	SMSG_GROUP_DECLINE								= 0x0000,
+	CMSG_GROUP_UNINVITE								= 0x0000,
+	CMSG_GROUP_UNINVITE_GUID						= 0x0000,
+	SMSG_GROUP_UNINVITE								= 0x0000,
+	CMSG_GROUP_SET_LEADER							= 0x0000,
+	SMSG_GROUP_SET_LEADER							= 0x0000,
+	CMSG_LOOT_METHOD								= 0x0000,
+	CMSG_GROUP_DISBAND								= 0x0000,
+	SMSG_GROUP_DESTROYED							= 0x0000,
+	SMSG_GROUP_LIST									= 0x0000,
+	SMSG_PARTY_MEMBER_STATS							= 0x0000,
+	SMSG_PARTY_COMMAND_RESULT						= 0x0000,
+	UMSG_UPDATE_GROUP_MEMBERS						= 0x0000,
+	CMSG_GUILD_CREATE								= 0x0000,
+	CMSG_GUILD_INVITE								= 0x0000,
+	SMSG_GUILD_INVITE								= 0x0000,
+	CMSG_GUILD_ACCEPT								= 0x0000,
+	CMSG_GUILD_DECLINE								= 0x0000,
+	SMSG_GUILD_DECLINE								= 0x0000,
+	CMSG_GUILD_INFO									= 0x0000,
+	SMSG_GUILD_INFO									= 0x0000,
+	CMSG_GUILD_ROSTER								= 0x0000,
+	SMSG_GUILD_ROSTER								= 0x0000,
+	CMSG_GUILD_PROMOTE								= 0x0000,
+	CMSG_GUILD_DEMOTE								= 0x0000,
+	CMSG_GUILD_LEAVE								= 0x0000,
+	CMSG_GUILD_REMOVE								= 0x0000,
+	CMSG_GUILD_DISBAND								= 0x0000,
+	CMSG_GUILD_LEADER								= 0x0000,
+	CMSG_GUILD_MOTD									= 0x0000,
+	SMSG_GUILD_EVENT								= 0x0000,
+	SMSG_GUILD_COMMAND_RESULT						= 0x0000,
+	UMSG_UPDATE_GUILD								= 0x0000,
     CMSG_JOIN_CHANNEL                               = 0x097,	// implemented
     CMSG_LEAVE_CHANNEL                              = 0x098,	// implemented
     SMSG_CHANNEL_NOTIFY                             = 0x099,	// implemented
@@ -208,8 +206,8 @@ enum Opcodes
     CMSG_CHANNEL_UNBAN                              = 0x0A6,	// implemented
     CMSG_CHANNEL_ANNOUNCEMENTS                      = 0x0A7,	// implemented
     CMSG_CHANNEL_MODERATE                           = 0x0A8,	// implemented
-    SMSG_UPDATE_OBJECT                              = 0x4715,	// 15595
-    SMSG_DESTROY_OBJECT                             = 0x4724,	// 15595
+    SMSG_UPDATE_OBJECT                              = 0x4715,
+    SMSG_DESTROY_OBJECT                             = 0x4724,
     CMSG_USE_ITEM                                   = 0x0AB,	// implemented
     CMSG_OPEN_ITEM                                  = 0x0AC,	// implemented
     CMSG_READ_ITEM                                  = 0x0AD,	// implemented
@@ -217,7 +215,7 @@ enum Opcodes
     SMSG_READ_ITEM_FAILED                           = 0x0AF,	// implemented
     SMSG_ITEM_COOLDOWN                              = 0x0B0,	/// TODO: implement
     CMSG_GAMEOBJ_USE                                = 0x4E17,	// 15595               !!!! NOT SURE !!!!
-    CMSG_DESTROY_ITEMS                              = 0x0B2,	// GM client only
+    CMSG_DESTROY_ITEMS                              = 0x0000,
     SMSG_GAMEOBJECT_CUSTOM_ANIM                     = 0x0B3,	// implemented
     CMSG_AREATRIGGER                                = 0x0B4,	// implemented
     MSG_MOVE_START_FORWARD                          = 0x0B5,	// implemented
@@ -531,8 +529,8 @@ enum Opcodes
     MSG_GM_SUMMON                                   = 0x1E9,	// GM client only
     SMSG_ITEM_TIME_UPDATE                           = 0x2407,	// 15595
     SMSG_ITEM_ENCHANT_TIME_UPDATE                   = 0x1EB,	// implemented
-    SMSG_AUTH_CHALLENGE                             = 0x4542,	// 15595
-    CMSG_AUTH_SESSION                               = 0x0449,	// 15595
+	SMSG_AUTH_CHALLENGE								= 0x0949,	// 5.4.8 18414
+	CMSG_AUTH_SESSION								= 0x00B2,	// 5.4.8 18414
     SMSG_AUTH_RESPONSE                              = 0x5DB6,	// 15595
     MSG_GM_SHOWLABEL                                = 0x1EF,	// GM client only
     CMSG_PET_CAST_SPELL                             = 0x1F0,	// implemented
@@ -560,7 +558,7 @@ enum Opcodes
     SMSG_GMTICKET_CREATE                            = 0x206,	// implemented
     CMSG_GMTICKET_UPDATETEXT                        = 0x207,	// implemented
     SMSG_GMTICKET_UPDATETEXT                        = 0x208,	// implemented
-    SMSG_ACCOUNT_DATA_TIMES                         = 0x4B05,	// 15595
+	SMSG_ACCOUNT_DATA_TIMES							= 0x162B,	// 5.4.8 18414
     CMSG_REQUEST_ACCOUNT_DATA                       = 0x20A,	// implemented
     CMSG_UPDATE_ACCOUNT_DATA                        = 0x4736,	// 15595
     SMSG_UPDATE_ACCOUNT_DATA                        = 0x6837,	// 15595
@@ -1234,7 +1232,7 @@ enum Opcodes
 	CMSG_PLAYER_VEHICLE_ENTER                       = 0x4A8,	/// TODO: investigate, cmsg uint64
 	CMSG_EJECT_PASSENGER                            = 0x4A9,	/// TODO: investigate, cmsg uint64
     SMSG_PET_GUIDS                                  = 0x4AA,	/// TODO: implement
-    SMSG_CLIENTCACHE_VERSION                        = 0x2734,	/// 15595
+	SMSG_CLIENTCACHE_VERSION						= 0x002A,	//5.4.8 18414
     UMSG_UNKNOWN_1196                               = 0x4AC,	/// TODO: investigate
     UMSG_UNKNOWN_1197                               = 0x4AD,	/// TODO: investigate
     UMSG_UNKNOWN_1198                               = 0x4AE,	/// TODO: investigate
@@ -1274,9 +1272,8 @@ enum Opcodes
     CMSG_WORLD_STATE_UI_TIMER_UPDATE                = 0x4F6,	// implemented
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                = 0x4F7,	// implemented
     NUM_MSG_TYPES                                   = 0xFFFF,	// max msg number
-
-	// 4.3.4 15595
-	MSG_WOW_CONNECTION                              = 0x4F57,    // string to check client-server connection
+	
+	MSG_WOW_CONNECTION                              = 0x4F57,    // Opcode NEVER Changes with versions
 
 	CMSG_READY_FOR_ACCOUNT_DATA_TIMES               = 0x2B16,    // implemented
 	CMSG_VIOLENCE_LEVEL                             = 0x7816,    // nothing to implement -- double check this

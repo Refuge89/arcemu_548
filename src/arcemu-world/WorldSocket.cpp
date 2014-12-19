@@ -1,22 +1,22 @@
 /*
- * ArcEmu MMORPG Server
- * Copyright (C) 2005-2007 Ascent Team <http://www.ascentemu.com/>
- * Copyright (C) 2008-2012 <http://www.ArcEmu.org/>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+* ArcEmu MMORPG Server
+* Copyright (C) 2005-2007 Ascent Team <http://www.ascentemu.com/>
+* Copyright (C) 2008-2012 <http://www.ArcEmu.org/>
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+*
+* You should have received a copy of the GNU Affero General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 // Class WorldSocket - Main network code functions, handles
 // reading/writing of all packets.
 
@@ -25,43 +25,57 @@
 #include "StdAfx.h"
 #include "AuthCodes.h"
 
-/* 
-   uncomment this if you want
-   to log all received/sent packets
-   to console
 
-   NOTE TO USER: it is on by default; you
-   might want to disable this if you are 
-   not a developer.
-*/
 #define ECHO_PACKET_LOG_TO_CONSOLE 1
 
 #pragma pack(push, 1)
+
+struct ServerPktHeader
+{
+	ServerPktHeader(uint32 size, uint32 cmd, WowCrypt* _authCrypt) : size(size)
+	{
+		if (_authCrypt->IsInitialized())
+		{
+			uint32 data = (size << 13) | (cmd & NUM_MSG_TYPES);
+			memcpy(&header[0], &data, 4);
+			_authCrypt->EncryptSend((uint8*)&header[0], getHeaderLength());
+		}
+		else
+		{
+			// Dynamic header size is not needed anymore, we are using not encrypted part for only the first few packets
+			memcpy(&header[0], &size, 2);
+			memcpy(&header[2], &cmd, 2);
+		}
+	}
+
+	uint8 getHeaderLength()
+	{
+		return 4;
+	}
+
+	const uint32 size;
+	uint8 header[4];
+};
+
+struct AuthClientPktHeader
+{
+	uint16 size;
+	uint32 cmd;
+};
+
+struct WorldClientPktHeader
+{
+	uint16 size;
+	uint16 cmd;
+};
+
+
 struct ClientPktHeader
 {
 	uint16 size;
 	uint32 cmd;
 };
 
-struct ServerPktHeader
-{
-	ServerPktHeader(uint32 _size, uint16 _cmd) : size(_size)
-	{
-		headerLength = 0;
-		if (size > 0x7FFF)
-			header[headerLength++] = 0x80 | (0xFF & (_size >> 16));
-		header[headerLength++] = 0xFF & (_size >> 8);
-		header[headerLength++] = 0xFF & _size;
-		header[headerLength++] = 0xFF & _cmd;
-		header[headerLength++] = 0xFF & (_cmd >> 8);
-	}
-
-	uint8 getHeaderLength() { return headerLength; }
-	bool isLargePacket() { return ((headerLength == 4) ? true : false); }
-	const uint32 size;
-	uint8 header[5];
-	uint8 headerLength;
-};
 #pragma pack(pop)
 
 WorldSocket::WorldSocket(SOCKET fd)
@@ -87,22 +101,22 @@ WorldSocket::~WorldSocket()
 {
 	WorldPacket* pck;
 	queueLock.Acquire();
-	while((pck = _queue.Pop()) != NULL)
+	while ((pck = _queue.Pop()) != NULL)
 	{
 		delete pck;
 	}
 	queueLock.Release();
 
-	if(pAuthenticationPacket)
+	if (pAuthenticationPacket)
 		delete pAuthenticationPacket;
 
-	if(mSession)
+	if (mSession)
 	{
 		mSession->SetSocket(NULL);
 		mSession = NULL;
 	}
 
-	if(m_fullAccountName != NULL)
+	if (m_fullAccountName != NULL)
 	{
 		delete m_fullAccountName;
 		m_fullAccountName = NULL;
@@ -111,19 +125,19 @@ WorldSocket::~WorldSocket()
 
 void WorldSocket::OnDisconnect()
 {
-	if(mSession)
+	if (mSession)
 	{
 		mSession->SetSocket(0);
 		mSession = NULL;
 	}
 
-	if(mRequestID != 0)
+	if (mRequestID != 0)
 	{
 		sLogonCommHandler.UnauthedSocketClose(mRequestID);
 		mRequestID = 0;
 	}
 
-	if(mQueued)
+	if (mQueued)
 	{
 		sWorld.RemoveQueuedSocket(this);	// Remove from queued sockets.
 		mQueued = false;
@@ -133,22 +147,22 @@ void WorldSocket::OnDisconnect()
 void WorldSocket::OutPacket(uint32 opcode, size_t len, const void* data)
 {
 	OUTPACKET_RESULT res;
-	if((len + 10) > WORLDSOCKET_SENDBUF_SIZE)
+	if ((len + 10) > WORLDSOCKET_SENDBUF_SIZE)
 	{
 		LOG_ERROR("WARNING: Tried to send a packet of %u bytes (which is too large) to a socket. Opcode was: %u (0x%03X)", (unsigned int)len, (unsigned int)opcode, (unsigned int)opcode);
 		return;
 	}
 
 	res = _OutPacket(opcode, len, data);
-	if(res == OUTPACKET_RESULT_SUCCESS)
+	if (res == OUTPACKET_RESULT_SUCCESS)
 		return;
 
-	if(res == OUTPACKET_RESULT_NO_ROOM_IN_BUFFER)
+	if (res == OUTPACKET_RESULT_NO_ROOM_IN_BUFFER)
 	{
 		/* queue the packet */
 		queueLock.Acquire();
 		WorldPacket* pck = new WorldPacket(opcode, len);
-		if(len) pck->append((const uint8*)data, len);
+		if (len) pck->append((const uint8*)data, len);
 		_queue.Push(pck);
 		queueLock.Release();
 	}
@@ -157,58 +171,58 @@ void WorldSocket::OutPacket(uint32 opcode, size_t len, const void* data)
 void WorldSocket::UpdateQueuedPackets()
 {
 	queueLock.Acquire();
-	if(!_queue.HasItems())
+	if (!_queue.HasItems())
 	{
 		queueLock.Release();
 		return;
 	}
 
 	WorldPacket* pck;
-	while((pck = _queue.front()) != NULL)
+	while ((pck = _queue.front()) != NULL)
 	{
 		/* try to push out as many as you can */
-		switch(_OutPacket(pck->GetOpcode(), pck->size(), pck->size() ? pck->contents() : NULL))
+		switch (_OutPacket(pck->GetOpcode(), pck->size(), pck->size() ? pck->contents() : NULL))
 		{
-			case OUTPACKET_RESULT_SUCCESS:
-				{
-					delete pck;
-					_queue.pop_front();
-				}
-				break;
+		case OUTPACKET_RESULT_SUCCESS:
+		{
+			delete pck;
+			_queue.pop_front();
+		}
+		break;
 
-			case OUTPACKET_RESULT_NO_ROOM_IN_BUFFER:
-				{
-					/* still connected */
-					queueLock.Release();
-					return;
-				}
-				break;
+		case OUTPACKET_RESULT_NO_ROOM_IN_BUFFER:
+		{
+			/* still connected */
+			queueLock.Release();
+			return;
+		}
+		break;
 
-			default:
-				{
-					/* kill everything in the buffer */
-					while((pck == _queue.Pop()) != 0)
-					{
-						delete pck;
-					}
-					queueLock.Release();
-					return;
-				}
-				break;
+		default:
+		{
+			/* kill everything in the buffer */
+			while ((pck == _queue.Pop()) != 0)
+			{
+				delete pck;
+			}
+			queueLock.Release();
+			return;
+		}
+		break;
 		}
 	}
 	queueLock.Release();
 }
 
 OUTPACKET_RESULT WorldSocket::_OutPacket(uint32 opcode, size_t len, const void* data)
-{
+{	
 	bool rv;
-	if(!IsConnected())
+	if (!IsConnected())
 		return OUTPACKET_RESULT_NOT_CONNECTED;
 
 	BurstBegin();
 	//if((m_writeByteCount + len + 4) >= m_writeBufferSize)
-	if(writeBuffer.GetSpace() < (len + 4))
+	if (writeBuffer.GetSpace() < (len + 4))
 	{
 		BurstEnd();
 		return OUTPACKET_RESULT_NO_ROOM_IN_BUFFER;
@@ -217,20 +231,20 @@ OUTPACKET_RESULT WorldSocket::_OutPacket(uint32 opcode, size_t len, const void* 
 	// Packet logger :)
 	sWorldLog.LogPacket((uint32)len, opcode, (const uint8*)data, 1, (mSession ? mSession->GetAccountId() : 0));
 
-	    //printf("Sent opcode: %d\n", opcode);
-		ServerPktHeader Header(uint32(len + 2), opcode);
-	    _crypt.EncryptSend(((uint8*)Header.header), Header.getHeaderLength());
+	//printf("Sent opcode: %d\n", opcode);
+	ServerPktHeader header(uint32(len + 2), opcode, &_crypt);
+	_crypt.EncryptSend(((uint8*)header.header), header.getHeaderLength());
 
-	    // Pass the header to our send buffer
-	    rv = BurstSend((const uint8*)&Header.header, Header.getHeaderLength());
+	// Pass the header to our send buffer
+	rv = BurstSend((const uint8*)&header.header, header.getHeaderLength());
 
-		// Pass the rest of the packet to our send buffer (if there is any)
-	    if(len > 0 && rv)
-	    {
-		    rv = BurstSend((const uint8*)data, (uint32)len);
-	    }
+	// Pass the rest of the packet to our send buffer (if there is any)
+	if (len > 0 && rv)
+	{
+		rv = BurstSend((const uint8*)data, (uint32)len);
+	}
 
-	if(rv) BurstPush();
+	if (rv) BurstPush();
 	BurstEnd();
 	return rv ? OUTPACKET_RESULT_SUCCESS : OUTPACKET_RESULT_SOCKET_ERROR;
 }
@@ -240,100 +254,87 @@ void WorldSocket::OnConnect()
 	sWorld.mAcceptedConnections++;
 	_latency = getMSTime();
 
-	//printf("OnConnect is executing.......\n");
-
-	WorldPacket packet(MSG_WOW_CONNECTION, 46);
-    packet << "RLD OF WARCRAFT CONNECTION - SERVER TO CLIENT";
+	WorldPacket packet(MSG_WOW_CONNECTION, 70);
+	packet << "RLD OF WARCRAFT CONNECTION - SERVER TO CLIENT";
 	SendPacket(&packet);
-	
-	//printf("Server to client\n");
-
-	//printf("OnConnect has executed!\n");
 }
 
 void WorldSocket::OnConnectTwo()
 {
 	WorldPacket packet(SMSG_AUTH_CHALLENGE, 37);
 
-	//mangos 4.3.4?
-	// No encryption seeds here?
+	packet << uint16(0);
 
-	for (uint32 i = 0; i < 8; i++)
-        packet << uint32(0);
+	for (int i = 0; i < 8; i++)
+		packet << uint32(0);
 
-	packet << mSeed;
 	packet << uint8(1);
-
-	//printf("OnConnectTwo has executed\n");
-    SendPacket(&packet);
+	packet << uint32(mSeed);
+	SendPacket(&packet);
 }
 
 void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 {
-	//printf("Handle auth session started executing...");
+	LOG_ERROR("WorldSocket::_HandleAuthSession\n");
+	//uint8 digest[20];
+    uint32 clientSeed;
+    uint8 security;
+    uint16 clientBuild;
+    uint32 id;
     uint32 addonSize;
-	std::string account;
-	_latency = getMSTime() - _latency;
+    //LocaleConstant locale;
+    std::string account;
+    //SHA1Hash sha;
+    BigNumber k;
+    WorldPacket addonsData;
 
-	try
-	{
-	recvPacket->read<uint32>();
-    recvPacket->read<uint32>();
-    recvPacket->read<uint8>();
-    *recvPacket >> AuthDigest[10];
-    *recvPacket >> AuthDigest[18];
-    *recvPacket >> AuthDigest[12];
-    *recvPacket >> AuthDigest[5];
-    recvPacket->read<uint64>();
-    *recvPacket >> AuthDigest[15];
-    *recvPacket >> AuthDigest[9];
-    *recvPacket >> AuthDigest[19];
-    *recvPacket >> AuthDigest[4];
-    *recvPacket >> AuthDigest[7];
-    *recvPacket >> AuthDigest[16];
-    *recvPacket >> AuthDigest[3];
-    //*recvPacket >> mClientBuild;
-	mClientBuild = recvPacket->read<uint16>();
-    *recvPacket >> AuthDigest[8];
-    recvPacket->read<uint32>();
-    recvPacket->read<uint8>();
-    *recvPacket >> AuthDigest[17];
-    *recvPacket >> AuthDigest[6];
-    *recvPacket >> AuthDigest[0];
-    *recvPacket >> AuthDigest[1];
-    *recvPacket >> AuthDigest[11];
-    *recvPacket >> mClientSeed;
-    *recvPacket >> AuthDigest[2];
-    recvPacket->read<uint32>();
-    *recvPacket >> AuthDigest[14];
-    *recvPacket >> AuthDigest[13];
+    recvPacket->read_skip<uint32>();
+    recvPacket->read_skip<uint32>();
+	*recvPacket >> AuthDigest[18];
+	*recvPacket >> AuthDigest[14];
+	*recvPacket >> AuthDigest[3];
+	*recvPacket >> AuthDigest[4];
+	*recvPacket >> AuthDigest[0];
+    recvPacket->read_skip<uint32>();
+	*recvPacket >> AuthDigest[11];
+    *recvPacket >> clientSeed;
+	*recvPacket >> AuthDigest[19];
+    recvPacket->read_skip<uint8>();
+    recvPacket->read_skip<uint8>();
+	*recvPacket >> AuthDigest[2];
+	*recvPacket >> AuthDigest[9];
+	*recvPacket >> AuthDigest[12];
+    recvPacket->read_skip<uint64>();
+    recvPacket->read_skip<uint32>();
+	*recvPacket >> AuthDigest[16];
+	*recvPacket >> AuthDigest[5];
+	*recvPacket >> AuthDigest[6];
+	*recvPacket >> AuthDigest[8];
+    *recvPacket >> clientBuild;
+	*recvPacket >> AuthDigest[17];
+	*recvPacket >> AuthDigest[7];
+	*recvPacket >> AuthDigest[13];
+	*recvPacket >> AuthDigest[15];
+	*recvPacket >> AuthDigest[1];
+	*recvPacket >> AuthDigest[10];
+    *recvPacket >> addonSize;
+
+	addonsData.resize(addonSize);
+	recvPacket->read((uint8*)addonsData.contents(), addonSize);
+
+	recvPacket->readBit();
+	uint32 accountNameLength = recvPacket->readBits(11);
+
+	account = recvPacket->ReadString(accountNameLength);
 
 
-        //size_t pos = recvPacket->rpos(); // so what the fuck
+	LOG_ERROR("DONE! -- Got account name: %s\n", account.c_str());
 
-     *recvPacket >> addonSize;
-
-	 recvPacket->read_skip(addonSize); // skip this
-     
-	 /*for(uint32 i = 0; i < addonSize; i++)
-         recvPacket->read<uint8>();*/
-
-		recvPacket->ReadBit();
-		uint32 accountNameLength = recvPacket->ReadBits(12);
-		account = recvPacket->ReadString(accountNameLength);
-
-		//printf("DONE! -- Got account name: %s\n", account.c_str());
-	}
-	catch(ByteBuffer::error &)
-	{
-		LOG_DETAIL("Incomplete copy of AUTH_SESSION Received.");
-		return;
-	}
 
 	// Send out a request for this account.
 	mRequestID = sLogonCommHandler.ClientConnected(account, this);
 
-	if(mRequestID == 0xFFFFFFFF)
+	if (mRequestID == 0xFFFFFFFF)
 	{
 		Disconnect();
 		return;
@@ -348,20 +349,18 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 
 void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 requestid)
 {
-    //printf("InformationRetreiveCallback is getting executed!!\n");
-
-	if(requestid != mRequestID)
+	if (requestid != mRequestID)
 		return;
 
 	uint32 error;
 	recvData >> error;
 
-	if(error != 0 || pAuthenticationPacket == NULL)
+	if (error != 0 || pAuthenticationPacket == NULL)
 	{
-	    printf("Something happened wrong @ the logon server\n");
+		LOG_ERROR("Something happened wrong @ the logon server\n");
 		// something happened wrong @ the logon server
 		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x0D");
-		SendAuthResponseError(0x0D);
+		SendAuthResponseError(AUTH_FAILED);
 		return;
 	}
 
@@ -376,14 +375,16 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 
 	//printf("Extracting needed information......\n");
 
-	recvData >> AccountID >> AccountName >> GMFlags >> AccountFlags;
-	ForcedPermissions = sLogonCommHandler.GetForcedPermissions(AccountName);
-	if(ForcedPermissions != NULL)
-		GMFlags.assign(ForcedPermissions->c_str());
-		
-		//printf("Got information packet from logon:: %s ID %u (request %u)\n", AccountName.c_str(), AccountID, mRequestID);
 
-	LOG_DEBUG(" >> got information packet from logon: `%s` ID %u (request %u)", AccountName.c_str(), AccountID, mRequestID);
+	recvData >> AccountID >> AccountName >> GMFlags >> AccountFlags;
+
+	ForcedPermissions = sLogonCommHandler.GetForcedPermissions(AccountName);
+	if (ForcedPermissions != NULL)
+		GMFlags.assign(ForcedPermissions->c_str());
+
+	//printf("Got information packet from logon:: %s ID %u (request %u)\n", AccountName.c_str(), AccountID, mRequestID);
+
+	//LOG_ERROR(" >> got information packet from logon: `%s` ID %u (request %u)", AccountName.c_str(), AccountID, mRequestID);
 
 	mRequestID = 0;
 
@@ -399,10 +400,10 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	//disconnect current player and login this one(blizzlike)
 
 	//if(recvData.rpos() != recvData.wpos())
-		recvData.read((uint8*)lang.data(), 4);
+	recvData.read((uint8*)lang.data(), 4);
 
 	WorldSession* session = sWorld.FindSession(AccountID);
-	if(session)
+	if (session)
 	{
 		// AUTH_FAILED = 0x0D
 		session->Disconnect();
@@ -415,39 +416,44 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 		// otherwise accounts dupe up and disasters happen.
 		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x15");
 		//printf("Auth failed\n");
-	    SendAuthResponseError(0x15); // auth failed
+		SendAuthResponseError(AUTH_UNKNOWN_ACCOUNT); // auth failed
 		return;
 	}
 
 	Sha1Hash sha;
 
 	uint32 t = 0;
-	if(m_fullAccountName == NULL)				// should never happen !
+	//if (m_fullAccountName == NULL)
+	//{
+		//LOG_ERROR("m_fullAccountName == NULL");
 		sha.UpdateData(AccountName);
-	else
-	{
-		sha.UpdateData(*m_fullAccountName);
+	//}
+	//else
+	//{
+	//	LOG_ERROR("sha.UpdateData(*m_fullAccountName);");
+	//	sha.UpdateData(*m_fullAccountName);
 
 		// this is unused now. we may as well free up the memory.
-		delete m_fullAccountName;
-		m_fullAccountName = NULL;
-	}
+		//delete m_fullAccountName;
+	//	m_fullAccountName = NULL;
+	//}
 
 	sha.UpdateData((uint8*)&t, 4);
-        sha.UpdateData((uint8*)&mClientSeed, 4);
-        sha.UpdateData((uint8*)&mSeed, 4);
-        sha.UpdateData((uint8*)&K, 40);
-        sha.Finalize();
+	sha.UpdateData((uint8*)&mClientSeed, 4);
+	sha.UpdateData((uint8*)&mSeed, 4);
+	sha.UpdateData((uint8*)&K, 40);
+	sha.Finalize();
+		
 
-	if(memcmp(sha.GetDigest(), AuthDigest, 20))
-	{
+	//if (memcmp(sha.GetDigest(), AuthDigest, 20))
+	//{
 		// AUTH_UNKNOWN_ACCOUNT = 21
 		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x15");
-		printf("auth_unknown_account\n");
-		SendAuthResponseError(0x15); // AUTH_UNKNOWN_ACCOUNT
-		return;
-	}
-	
+	//	LOG_ERROR("auth_unknown_account\n");
+	//	SendAuthResponseError(AUTH_UNKNOWN_ACCOUNT);
+	//	return;
+	//}
+
 	//printf("Allocating session........\n");
 
 	// Allocate session
@@ -465,28 +471,28 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	pSession->language = sLocalizationMgr.GetLanguageId(lang);
 
 	//if(recvData.rpos() != recvData.wpos())
-		//recvData >> pSession->m_muted;
-		
-		//printf("Session properties set!\n");
+	//recvData >> pSession->m_muted;
 
-	for(i = 0; i < 8; ++i)
+	LOG_ERROR("Session properties set!\n");
+
+	for (i = 0; i < 8; ++i)
 		pSession->SetAccountData(i, NULL, true, 0);
 
-	if(sWorld.m_useAccountData)
+	if (sWorld.m_useAccountData)
 	{
 		QueryResult* pResult = CharacterDatabase.Query("SELECT * FROM account_data WHERE acct = %u", AccountID);
-		if(pResult == NULL)
+		if (pResult == NULL)
 			CharacterDatabase.Execute("INSERT INTO account_data VALUES(%u, '', '', '', '', '', '', '', '', '')", AccountID);
 		else
 		{
 			size_t len;
 			const char* data;
 			char* d;
-			for(i = 0; i < 8; ++i)
+			for (i = 0; i < 8; ++i)
 			{
 				data = pResult->Fetch()[1 + i].GetString();
 				len = data ? strlen(data) : 0;
-				if(len > 1)
+				if (len > 1)
 				{
 					d = new char[len + 1];
 					memcpy(d, data, len + 1);
@@ -499,12 +505,12 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	}
 	//printf("Auth %s from %s:%u [%ums]\n", AccountName.c_str(), GetRemoteIP().c_str(), GetRemotePort(), _latency);
 	Log.Debug("Auth", "%s from %s:%u [%ums]", AccountName.c_str(), GetRemoteIP().c_str(), GetRemotePort(), _latency);
-	
+
 #ifdef SESSION_CAP
-	if(sWorld.GetSessionCount() >= SESSION_CAP)
+	if (sWorld.GetSessionCount() >= SESSION_CAP)
 	{
 		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x0D");
-		SendAuthResponseError(0x0D);
+		AUTH_FAILEDSendAuthResponseError(AUTH_FAILED);
 		Disconnect();
 		return;
 	}
@@ -512,12 +518,12 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 
 	// Check for queue.
 	uint32 playerLimit = sWorld.GetPlayerLimit();
-	if((sWorld.GetSessionCount() < playerLimit) || pSession->HasGMPermissions())
+	if ((sWorld.GetSessionCount() < playerLimit) || pSession->HasGMPermissions())
 	{
-		//printf("You're gonna get authed!!\n");
-		Authenticate();
+		LOG_ERROR("You're gonna get authed!!\n");
+		Authenticate(AUTH_OK, false, NULL);
 	}
-	else if(playerLimit > 0)
+	else if (playerLimit > 0)
 	{
 		// Queued, sucker.
 		uint32 Position = sWorld.AddQueuedSocket(this);
@@ -529,7 +535,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	}
 	else
 	{
-		SendAuthResponseError(0x0E);
+		SendAuthResponseError(AUTH_REJECT);
 		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x0E"); // AUTH_REJECT = 14
 		Disconnect();
 	}
@@ -539,34 +545,104 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 
 }
 
-void WorldSocket::Authenticate()
+void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos) //Done for 5.4.8 18414
 {
-	//printf("We're authenticating baby!\n");
+	LOG_ERROR("We're authenticating baby!\n");
 	ARCEMU_ASSERT(pAuthenticationPacket != NULL);
 	mQueued = false;
 
-	if(mSession == NULL)
+	if (mSession == NULL)
 		return;
 
-	WorldPacket data(SMSG_AUTH_RESPONSE, 17); // 17 + 4 if in queue
+	WorldPacket data(SMSG_AUTH_RESPONSE, 80);
 
-	data.WriteBit(false);
-	data.WriteBit(true);
+	std::map<uint32, std::string> realmNamesToSend;
 
-	data << uint32(0);                                   // BillingTimeRemaining
-    data << uint8(3);                          // 0 - normal, 1 - TBC, 2 - WOTLK, 3 - CATA; must be set in database manually for each account
-    data << uint32(0);
-    data << uint8(3);                          // Unknown, these two show the same
-    data << uint32(0);                                   // BillingTimeRested
-    data << uint8(0);                                    // BillingPlanFlags
+	QueryResult* classResult = CharacterDatabase.Query("SELECT class, expansion FROM realm_classes WHERE realmId = %u", 1);
+	QueryResult* raceResult = CharacterDatabase.Query("SELECT race, expansion FROM realm_races WHERE realmId = %u", 1);
 
-    data << uint8(0x0C); // 0x0C = 12 (AUTH_OK)
+	if (!classResult || !raceResult)
+	{
+		LOG_ERROR("Unable to retrieve class or race data. Make sure you applied the Auth_Update SQL");
+		return;
+	}
+
+	data.writeBit(code = AUTH_OK);
+
+	if (code = AUTH_OK)
+	{
+		data.writeBits(realmNamesToSend.size(), 21);
+
+		for (std::map<uint32, std::string>::const_iterator itr = realmNamesToSend.begin(); itr != realmNamesToSend.end(); itr++)
+		{
+			data.writeBits(itr->second.size(), 8);
+			data.writeBits(itr->second.size(), 8);
+			data.writeBit(itr->first == 1);
+		}
+
+		data.writeBits(classResult->GetRowCount(), 23);
+		data.writeBits(0, 21);
+		data.writeBit(0);
+		data.writeBit(0);
+		data.writeBit(0);
+		data.writeBit(0);
+		data.writeBits(raceResult->GetRowCount(), 23);
+		data.writeBit(0);
+	}
+
+	data.writeBit(queued);
+
+	if (queued)
+		data.writeBit(1);
+
+	data.flushBits();
+
+	if (queued)
+		data << uint32(0);
+
+	if (code == AUTH_OK)
+	{
+		for (std::map<uint32, std::string>::const_iterator itr = realmNamesToSend.begin(); itr != realmNamesToSend.end(); itr++)
+		{
+			data << uint32(itr->first);
+			data.WriteString(itr->second);
+			data.WriteString(itr->second);
+		}
+
+		do
+		{
+			Field* fields = raceResult->Fetch();
+
+			data << fields[1].GetUInt8();
+			data << fields[0].GetUInt8();
+		} while (raceResult->NextRow());
+
+		do
+		{
+			Field* fields = classResult->Fetch();
+
+			data << fields[1].GetUInt8();
+			data << fields[0].GetUInt8();
+		} while (classResult->NextRow());
+
+		data << uint32(0);
+		data << uint8(4);
+		data << uint32(4);
+		data << uint32(0);
+		data << uint8(4);
+		data << uint32(0);
+		data << uint32(0);
+		data << uint32(0);
+	}
+
+	data << uint8(code);
 
 	SendPacket(&data);
 
 	WorldPacket cdata(SMSG_CLIENTCACHE_VERSION, 4);
-    cdata << uint32(15595);
-    SendPacket(&cdata);
+	LOG_ERROR("SMSG_CLIENTCACHE_VERSION\n");
+	cdata << uint32(18414);
+	SendPacket(&cdata);
 
 	//sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
 	mSession->_latency = _latency;
@@ -577,37 +653,37 @@ void WorldSocket::Authenticate()
 	sWorld.AddSession(mSession);
 	sWorld.AddGlobalSession(mSession);
 
-	if(mSession->HasGMPermissions())
+	if (mSession->HasGMPermissions())
 		sWorld.gmList.insert(mSession);
 }
 
 void WorldSocket::UpdateQueuePosition(uint32 Position)
 {
-	//printf("UpdateQueuePosition gets executed!!\n");
+	LOG_ERROR("UpdateQueuePosition gets executed!!\n");
 	WorldPacket QueuePacket(SMSG_AUTH_RESPONSE, 21); // 17 + 4 if queued
 
-	QueuePacket.WriteBit(true);                                  // has queue
-    QueuePacket.WriteBit(false);                                 // unk queue-related
-    QueuePacket.WriteBit(true);                                  // has account data
+	QueuePacket.writeBit(true);                                  // has queue
+	QueuePacket.writeBit(false);                                 // unk queue-related
+	QueuePacket.writeBit(true);                                  // has account data
 
-    QueuePacket << uint32(0);                                    // Unknown - 4.3.2
-    QueuePacket << uint8(3);                     // 0 - normal, 1 - TBC, 2 - WotLK, 3 - CT. must be set in database manually for each account
-    QueuePacket << uint32(0);                                    // BillingTimeRemaining
-    QueuePacket << uint8(3);                     // 0 - normal, 1 - TBC, 2 - WotLK, 3 - CT. Must be set in database manually for each account.
-    QueuePacket << uint32(0);                                    // BillingTimeRested
-    QueuePacket << uint8(0);                                     // BillingPlanFlags
+	QueuePacket << uint32(0);                                    // Unknown - 4.3.2
+	QueuePacket << uint8(3);                     // 0 - normal, 1 - TBC, 2 - WotLK, 3 - CT. must be set in database manually for each account
+	QueuePacket << uint32(0);                                    // BillingTimeRemaining
+	QueuePacket << uint8(3);                     // 0 - normal, 1 - TBC, 2 - WotLK, 3 - CT. Must be set in database manually for each account.
+	QueuePacket << uint32(0);                                    // BillingTimeRested
+	QueuePacket << uint8(0);                                     // BillingPlanFlags
 
-    QueuePacket << uint8(0x1B);                                  // Waiting in queue (AUTH_WAIT_QUEUE I think)
+	QueuePacket << uint8(0x1B);                                  // Waiting in queue (AUTH_WAIT_QUEUE I think)
 
-    QueuePacket << uint32(Position);            // position in queue
+	QueuePacket << uint32(Position);            // position in queue
 
-    SendPacket(&QueuePacket);
+	SendPacket(&QueuePacket);
 }
 
 void WorldSocket::_HandlePing(WorldPacket* recvPacket)
 {
 	uint32 ping;
-	if(recvPacket->size() < 4)
+	if (recvPacket->size() < 4)
 	{
 		LOG_ERROR("Socket closed due to incomplete ping packet.");
 		Disconnect();
@@ -617,7 +693,7 @@ void WorldSocket::_HandlePing(WorldPacket* recvPacket)
 	*recvPacket >> _latency;
 	*recvPacket >> ping;
 
-	if(mSession)
+	if (mSession)
 	{
 		mSession->_latency = _latency;
 		mSession->m_lastPing = (uint32)UNIXTIME;
@@ -632,9 +708,9 @@ void WorldSocket::_HandlePing(WorldPacket* recvPacket)
 	// Dynamically change nagle buffering status based on latency.
 	//if(_latency >= 250)
 	// I think 350 is better, in a MMO 350 latency isn't that big that we need to worry about reducing the number of packets being sent.
-	if(_latency >= 350)
+	if (_latency >= 350)
 	{
-		if(!m_nagleEanbled)
+		if (!m_nagleEanbled)
 		{
 			u_long arg = 0;
 			setsockopt(GetFd(), 0x6, 0x1, (const char*)&arg, sizeof(arg));
@@ -643,7 +719,7 @@ void WorldSocket::_HandlePing(WorldPacket* recvPacket)
 	}
 	else
 	{
-		if(m_nagleEanbled)
+		if (m_nagleEanbled)
 		{
 			u_long arg = 1;
 			setsockopt(GetFd(), 0x6, 0x1, (const char*)&arg, sizeof(arg));
@@ -655,12 +731,12 @@ void WorldSocket::_HandlePing(WorldPacket* recvPacket)
 
 void WorldSocket::OnRead()
 {
-	for(;;)
+	for (;;)
 	{
 		// Check for the header if we don't have any bytes to wait for.
-		if(mRemaining == 0)
+		if (mRemaining == 0)
 		{
-			if(readBuffer.GetSize() < 6)
+			if (readBuffer.GetSize() < 6)
 			{
 				// No header in the packet, let's wait.
 				return;
@@ -673,15 +749,15 @@ void WorldSocket::OnRead()
 			// Decrypt the header
 			_crypt.DecryptRecv((uint8*)&Header, sizeof(ClientPktHeader));
 
-			mRemaining = mSize = ntohs(Header.size) - 4;
+			mRemaining = mSize = Header.size -= 4;
 			mOpcode = Header.cmd;
 		}
 
 		WorldPacket* Packet;
 
-		if(mRemaining > 0)
+		if (mRemaining > 0)
 		{
-			if(readBuffer.GetSize() < mRemaining)
+			if (readBuffer.GetSize() < mRemaining)
 			{
 				// We have a fragmented packet. Wait for the complete one before proceeding.
 				return;
@@ -691,7 +767,7 @@ void WorldSocket::OnRead()
 		Packet = new WorldPacket(static_cast<uint16>(mOpcode), mSize);
 		Packet->resize(mSize);
 
-		if(mRemaining > 0)
+		if (mRemaining > 0)
 		{
 			// Copy from packet buffer into our actual buffer.
 			///Read(mRemaining, (uint8*)Packet->contents());
@@ -700,53 +776,63 @@ void WorldSocket::OnRead()
 
 		sWorldLog.LogPacket(mSize, static_cast<uint16>(mOpcode), mSize ? Packet->contents() : NULL, 0, (mSession ? mSession->GetAccountId() : 0));
 		mRemaining = mSize = mOpcode = 0;
-
 		// Check for packets that we handle
-		switch(Packet->GetOpcode())
+		switch (Packet->GetOpcode())
 		{
-			case CMSG_PING:
-				{
-					_HandlePing(Packet);
-					delete Packet;
-				}
-				break;
-			case MSG_WOW_CONNECTION:
-				{
-					//printf("Client to server\n");
-					HandleWoWConnection(Packet);      // new 4.x
-				}
-				break;
-			case CMSG_AUTH_SESSION:
-				{
-					_HandleAuthSession(Packet);
-				}
-				break;
-			default:
-				{
-					if(mSession) mSession->QueuePacket(Packet);
-                    else delete Packet;
-				}
-				break;
+		case CMSG_PING:
+		{
+			_HandlePing(Packet);
+			delete Packet;
+		}
+		break;
+		case MSG_WOW_CONNECTION:
+		{
+			//printf("Client to server\n");
+			HandleWoWConnection(Packet);      // new 4.x
+		}
+		break;
+		case CMSG_AUTH_SESSION:
+		{
+			_HandleAuthSession(Packet);
+		}
+		break;
+		default:
+		{
+			if (mSession) mSession->QueuePacket(Packet);
+			else delete Packet;
+		}
+		break;
 		}
 	}
 }
 
+
 void WorldSocket::HandleWoWConnection(WorldPacket* recvPacket)
 {
-		string ClientToServerMsg;
-        *recvPacket >> ClientToServerMsg;
+	string ClientToServerMsg;
 
+	*recvPacket >> ClientToServerMsg;
+
+	if (ClientToServerMsg != "D OF WARCRAFT CONNECTION - CLIENT TO SERVER")
+	{
+		LOG_ERROR("Wasn't as expected, returning... \n");
+		return;
+	}
+	else
+	{
 		// cause we love having a hundred functions
 		OnConnectTwo();
+	}
 }
 
 void WorldSocket::SendAuthResponseError(uint8 code)
 {
+	LOG_ERROR("error code : %u", code);
 	WorldPacket packet(SMSG_AUTH_RESPONSE, 1);
-	packet.WriteBit(0);      // has queue info
-	packet.WriteBit(0);      // has account info
+	packet.writeBit(0);      // has queue info
+	packet.writeBit(0);      // has account info
 	packet << uint8(code);   // the error code
-	
+
 	SendPacket(&packet);
 }
 
@@ -755,10 +841,10 @@ void WorldLog::LogPacket(uint32 len, uint32 opcode, const uint8* data, uint8 dir
 {
 #ifdef ECHO_PACKET_LOG_TO_CONSOLE
 	sLog.outString("[%s]: %s %s (0x%03X) of %u bytes.", direction ? "SERVER" : "CLIENT", direction ? "sent" : "received",
-	               LookupName(opcode, g_worldOpcodeNames), opcode, len);
+		LookupName(opcode, g_worldOpcodeNames), opcode, len);
 #endif
 
-	if(bEnabled)
+	if (bEnabled)
 	{
 		mutex.Acquire();
 		unsigned int line = 1;
@@ -767,25 +853,25 @@ void WorldLog::LogPacket(uint32 len, uint32 opcode, const uint8* data, uint8 dir
 		unsigned int count = 0;
 
 		fprintf(m_file, "{%s} Packet: (0x%04X) %s PacketSize = %u stamp = %u accountid = %u\n", (direction ? "SERVER" : "CLIENT"), opcode,
-		        LookupName(opcode, g_worldOpcodeNames), lenght, getMSTime(), accountid);
+			LookupName(opcode, g_worldOpcodeNames), lenght, getMSTime(), accountid);
 		fprintf(m_file, "|------------------------------------------------|----------------|\n");
 		fprintf(m_file, "|00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F |0123456789ABCDEF|\n");
 		fprintf(m_file, "|------------------------------------------------|----------------|\n");
 
-		if(lenght > 0)
+		if (lenght > 0)
 		{
 			fprintf(m_file, "|");
-			for(count = 0 ; count < lenght ; count++)
+			for (count = 0; count < lenght; count++)
 			{
-				if(countpos == 16)
+				if (countpos == 16)
 				{
 					countpos = 0;
 
 					fprintf(m_file, "|");
 
-					for(unsigned int a = count - 16; a < count; a++)
+					for (unsigned int a = count - 16; a < count; a++)
 					{
-						if((data[a] < 32) || (data[a] > 126))
+						if ((data[a] < 32) || (data[a] > 126))
 							fprintf(m_file, ".");
 						else
 							fprintf(m_file, "%c", data[a]);
@@ -800,40 +886,40 @@ void WorldLog::LogPacket(uint32 len, uint32 opcode, const uint8* data, uint8 dir
 				fprintf(m_file, "%02X ", data[count]);
 
 				//FIX TO PARSE PACKETS WITH LENGTH < OR = TO 16 BYTES.
-				if(count + 1 == lenght && lenght <= 16)
+				if (count + 1 == lenght && lenght <= 16)
 				{
-					for(unsigned int b = countpos + 1; b < 16; b++)
+					for (unsigned int b = countpos + 1; b < 16; b++)
 						fprintf(m_file, "   ");
 
 					fprintf(m_file, "|");
 
-					for(unsigned int a = 0; a < lenght; a++)
+					for (unsigned int a = 0; a < lenght; a++)
 					{
-						if((data[a] < 32) || (data[a] > 126))
+						if ((data[a] < 32) || (data[a] > 126))
 							fprintf(m_file, ".");
 						else
 							fprintf(m_file, "%c", data[a]);
 					}
 
-					for(unsigned int c = count; c < 15; c++)
+					for (unsigned int c = count; c < 15; c++)
 						fprintf(m_file, " ");
 
 					fprintf(m_file, "|\n");
 				}
 
 				//FIX TO PARSE THE LAST LINE OF THE PACKETS WHEN THE LENGTH IS > 16 AND ITS IN THE LAST LINE.
-				if(count + 1 == lenght && lenght > 16)
+				if (count + 1 == lenght && lenght > 16)
 				{
-					for(unsigned int b = countpos + 1; b < 16; b++)
+					for (unsigned int b = countpos + 1; b < 16; b++)
 						fprintf(m_file, "   ");
 
 					fprintf(m_file, "|");
 
 					unsigned short print = 0;
 
-					for(unsigned int a = line * 16 - 16; a < lenght; a++)
+					for (unsigned int a = line * 16 - 16; a < lenght; a++)
 					{
-						if((data[a] < 32) || (data[a] > 126))
+						if ((data[a] < 32) || (data[a] > 126))
 							fprintf(m_file, ".");
 						else
 							fprintf(m_file, "%c", data[a]);
@@ -841,7 +927,7 @@ void WorldLog::LogPacket(uint32 len, uint32 opcode, const uint8* data, uint8 dir
 						print++;
 					}
 
-					for(unsigned int c = print; c < 16; c++)
+					for (unsigned int c = print; c < 16; c++)
 						fprintf(m_file, " ");
 
 					fprintf(m_file, "|\n");

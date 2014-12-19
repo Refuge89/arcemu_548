@@ -960,7 +960,7 @@ void World::UpdateQueuedSessions(uint32 diff)
 			if(QueuedSocket->GetSession())
 			{
 				QueuedSocket->GetSession()->deleteMutex.Acquire();
-				QueuedSocket->Authenticate();
+				QueuedSocket->Authenticate(AUTH_OK, false, NULL);
 				QueuedSocket->GetSession()->deleteMutex.Release();
 			}
 		}

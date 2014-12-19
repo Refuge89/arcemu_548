@@ -23,11 +23,12 @@
 Sha1Hash::Sha1Hash()
 {
 	SHA1_Init(&mC);
+	memset(mDigest, 0, SHA_DIGEST_LENGTH * sizeof(uint8));
 }
 
 Sha1Hash::~Sha1Hash()
 {
-	// nothing.. lol
+	SHA1_Init(&mC);
 }
 
 void Sha1Hash::UpdateData(const uint8* dta, int len)

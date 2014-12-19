@@ -73,7 +73,7 @@
 // LOGON_MINBUILD minimum allowed build number that the logonserver will allow clients to connect with
 #define LOGON_MINBUILD 15595
 // LOGON_MAXBUILD maximum allowed build number that the logonserver will allow clients to connect with
-#define LOGON_MAXBUILD 15595
+#define LOGON_MAXBUILD 18414
 
 #endif		// __arcemuCONFIG_H
 

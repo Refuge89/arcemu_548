@@ -179,9 +179,9 @@ WorldPacket data (SMSG_CHAR_ENUM, packetSize);
 
 ByteBuffer buffer;
 
-data.WriteBits(0, 23);
-data.WriteBit(1);
-data.WriteBits(result ? result->GetRowCount() : 0, 17);
+data.writeBits(0, 23);
+data.writeBit(1);
+data.writeBits(result ? result->GetRowCount() : 0, 17);
 
 
 if (result)
@@ -252,24 +252,24 @@ do
 
 
 			
-	data.WriteBit(guid3);
-    data.WriteBit(guidb1);
-    data.WriteBit(guidb7);
-    data.WriteBit(guidb2);
-    data.WriteBits(uint32(name.length()), 7);
-    data.WriteBit(guid4);
-    data.WriteBit(guid7);
-    data.WriteBit(guidb3);
-    data.WriteBit(guid5);
-    data.WriteBit(guidb6);
-    data.WriteBit(guid1);
-    data.WriteBit(guidb5);
-    data.WriteBit(guidb4);
-    data.WriteBit(fields[15].GetUInt32() & 0x20); // atLoginFlags & 0x20 = AT_LOGIN_FIRST (trinitycore) // not 4.3.4, what to do?
-    data.WriteBit(guid0);
-    data.WriteBit(guid2);
-    data.WriteBit(guid6);
-    data.WriteBit(guidb0);
+	data.writeBit(guid3);
+    data.writeBit(guidb1);
+    data.writeBit(guidb7);
+    data.writeBit(guidb2);
+    data.writeBits(uint32(name.length()), 7);
+    data.writeBit(guid4);
+    data.writeBit(guid7);
+    data.writeBit(guidb3);
+    data.writeBit(guid5);
+    data.writeBit(guidb6);
+    data.writeBit(guid1);
+    data.writeBit(guidb5);
+    data.writeBit(guidb4);
+    data.writeBit(fields[15].GetUInt32() & 0x20); // atLoginFlags & 0x20 = AT_LOGIN_FIRST (trinitycore) // not 4.3.4, what to do?
+    data.writeBit(guid0);
+    data.writeBit(guid2);
+    data.writeBit(guid6);
+    data.writeBit(guidb0);
 			
     
     if(_side < 0)
@@ -452,7 +452,7 @@ do
 				buffer << uint32(zone);
 } while (result->NextRow()); // end do while
 
-data.FlushBits();
+data.flushBits();
 data.append(buffer);
 
 } // end if
@@ -699,7 +699,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 		if(result->Fetch()[0].GetUInt32() > 0)
 		{
 			// That name is banned!
-			OutPacket(SMSG_CHAR_CREATE, 1, CHAR_NAME_PROFANE);
+			WorldPacket data(SMSG_CHAR_CREATE);
+			data << uint8(CHAR_NAME_PROFANE);
+			SendPacket(&data);			
 			delete result;
 			return;
 		}
@@ -710,7 +712,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 	if(Config.OptionalConfig.GetBoolDefault("ClassOptions" , "DeathKnightLimit" , true) && has_dk
 	        && (class_ == DEATHKNIGHT))
 	{
-		OutPacket(SMSG_CHAR_CREATE, 1, CHAR_CREATE_UNIQUE_CLASS_LIMIT);
+		WorldPacket data(SMSG_CHAR_CREATE);
+		data << uint8(CHAR_CREATE_UNIQUE_CLASS_LIMIT);
+		SendPacket(&data);
 		return;
 	}
 
@@ -725,7 +729,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 		if(result->Fetch()[0].GetUInt32() >= 10)
 		{
 			// We can't make any more characters.
-			OutPacket(SMSG_CHAR_CREATE, 1, CHAR_CREATE_SERVER_LIMIT);
+			WorldPacket data(SMSG_CHAR_CREATE);
+			data << uint8(CHAR_CREATE_SERVER_LIMIT);
+			SendPacket(&data);
 			delete result;
 			return;
 		}
@@ -739,7 +745,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 		// failed.
 		pNewChar->ok_to_remove = true;
 		delete pNewChar;
-		OutPacket(SMSG_CHAR_CREATE, 1, CHAR_CREATE_FAILED);
+		WorldPacket data(SMSG_CHAR_CREATE);
+		data << uint8(CHAR_CREATE_FAILED);
+		SendPacket(&data);
 		return;
 	}
 
@@ -751,7 +759,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 		{
 			pNewChar->ok_to_remove = true;
 			delete pNewChar;
-			OutPacket(SMSG_CHAR_CREATE, 1, CHAR_CREATE_PVP_TEAMS_VIOLATION);
+			WorldPacket data(SMSG_CHAR_CREATE);
+			data << uint8(CHAR_CREATE_PVP_TEAMS_VIOLATION);
+			SendPacket(&data);
 			return;
 		}
 	}
@@ -763,13 +773,10 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 	{
 		pNewChar->ok_to_remove = true;
 		delete pNewChar;
-		/*
-		WorldPacket data(1);
-		data.SetOpcode(SMSG_CHAR_CREATE);
-		data << (uint8)56 + 1; // This errorcode is not the actual one. Need to find a real error code.
-		SendPacket( &data );
-		*/
-		OutPacket(SMSG_CHAR_CREATE, 1, CHAR_CREATE_LEVEL_REQUIREMENT);
+		
+		WorldPacket data(SMSG_CHAR_CREATE);
+		data << uint8(CHAR_CREATE_LEVEL_REQUIREMENT);
+		SendPacket(&data);
 		return;
 	}
 
@@ -805,8 +812,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 
 	pNewChar->ok_to_remove = true;
 	delete  pNewChar;
-
-	OutPacket(SMSG_CHAR_CREATE, 1, CHAR_CREATE_SUCCESS);
+	WorldPacket data(SMSG_CHAR_CREATE);
+	data << uint8(CHAR_CREATE_SUCCESS);
+	SendPacket(&data);
 
 	sLogonCommHandler.UpdateAccountCount(GetAccountId(), 1);
 }
@@ -987,14 +995,14 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket & recv_data)
 	// 15595
 	uint8 playerGuid[8];
 	
-	playerGuid[2] = recv_data.ReadBit();
-    playerGuid[3] = recv_data.ReadBit();
-    playerGuid[0] = recv_data.ReadBit();
-    playerGuid[6] = recv_data.ReadBit();
-    playerGuid[4] = recv_data.ReadBit();
-    playerGuid[5] = recv_data.ReadBit();
-    playerGuid[1] = recv_data.ReadBit();
-    playerGuid[7] = recv_data.ReadBit();
+	playerGuid[2] = recv_data.readBit();
+    playerGuid[3] = recv_data.readBit();
+    playerGuid[0] = recv_data.readBit();
+    playerGuid[6] = recv_data.readBit();
+    playerGuid[4] = recv_data.readBit();
+    playerGuid[5] = recv_data.readBit();
+    playerGuid[1] = recv_data.readBit();
+    playerGuid[7] = recv_data.readBit();
 
     recv_data.ReadByteSeq(playerGuid[2]);
     recv_data.ReadByteSeq(playerGuid[7]);
@@ -1201,13 +1209,13 @@ void WorldSession::FullLogin(Player* plr)
     datax << uint32(1);
     datax << uint32(2);
     datax << uint32(0);
-    datax.WriteBit(true);
-    datax.WriteBit(true);
-    datax.WriteBit(false);
-    datax.WriteBit(true);
-    datax.WriteBit(false);
-    datax.WriteBit(false);                                   // enable(1)/disable(0) voice chat interface in client
-	datax.FlushBits();
+    datax.writeBit(true);
+    datax.writeBit(true);
+    datax.writeBit(false);
+    datax.writeBit(true);
+    datax.writeBit(false);
+    datax.writeBit(false);                                   // enable(1)/disable(0) voice chat interface in client
+	datax.flushBits();
     datax << uint32(1);
     datax << uint32(0);
     datax << uint32(10);
@@ -1499,5 +1507,5 @@ void WorldSession::HandleLoadScreenOpcode(WorldPacket & recv_data)
 	uint32 mapId;
 
 	recv_data >> mapId;
-	recv_data.ReadBit();
+	recv_data.readBit();
 }

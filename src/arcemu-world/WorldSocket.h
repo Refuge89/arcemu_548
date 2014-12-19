@@ -22,7 +22,7 @@
 // reading/writing of all packets.
 
 #ifndef __WORLDSOCKET_H
-#define __WORLDSOCKET_H
+#define __WORLDSOCKET_Hz
 
 #define WORLDSOCKET_SENDBUF_SIZE 131078
 #define WORLDSOCKET_RECVBUF_SIZE 16384
@@ -54,7 +54,7 @@ class SERVER_DECL WorldSocket : public Socket
 
 		ARCEMU_INLINE uint32 GetLatency() { return _latency; }
 
-		void Authenticate();
+		void Authenticate(uint8 code, bool queued, uint32 queuePos);
 		void InformationRetreiveCallback(WorldPacket & recvData, uint32 requestid);
 
 		void  UpdateQueuePosition(uint32 Position);
