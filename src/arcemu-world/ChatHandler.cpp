@@ -157,7 +157,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 	{
 		case CHAT_MSG_SAY:
             {
-                msg = recv_data.ReadString(recv_data.readBits(9));
+                msg = recv_data.ReadString(recv_data.ReadBits(9));
             }
 			break;
 		default:

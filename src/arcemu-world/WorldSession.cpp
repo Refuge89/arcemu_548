@@ -1615,8 +1615,8 @@ void WorldSession::SendAccountDataTimes(uint32 mask)
 {
 	WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + NUM_ACCOUNT_DATA_TYPES * 4);	// changed in WotLK
 
-	data.writeBit(1);
-	data.flushBits();	
+	data.WriteBit(1);
+	data.FlushBits();	
 
 	for(uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
 		if(mask & (1 << i))

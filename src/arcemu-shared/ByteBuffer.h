@@ -64,11 +64,11 @@ class SERVER_DECL ByteBuffer
 		//}
 		template <typename T> void append(T value)
 	{
-		flushBits();
+		FlushBits();
 		append((uint8 *)&value, sizeof(value));
 	}
 
-		 void flushBits()
+		 void FlushBits()
     {
         if (_bitpos == 8)
             return;
@@ -78,7 +78,7 @@ class SERVER_DECL ByteBuffer
         _bitpos = 8;
     }
 
-		 bool writeBit(uint32 bit)
+		 bool WriteBit(uint32 bit)
     {
         --_bitpos;
         if (bit)
@@ -94,10 +94,10 @@ class SERVER_DECL ByteBuffer
         return (bit != 0);
     }
  
-    template <typename T> void writeBits(T value, size_t bits)
+    template <typename T> void WriteBits(T value, size_t bits)
     {
         for (int32 i = bits-1; i >= 0; --i)
-            writeBit((value >> i) & 1);
+            WriteBit((value >> i) & 1);
     }
 
 	// get account name (new in cataclysm)
@@ -128,7 +128,7 @@ class SERVER_DECL ByteBuffer
 			append(str.c_str(), len);
 	}
 
-    bool readBit()
+    bool ReadBit()
     {
         ++_bitpos;
         if (_bitpos > 7)
@@ -141,7 +141,7 @@ class SERVER_DECL ByteBuffer
     }
     void ReadByteMask(uint8& b)
     {
-        b = readBit() ? 1 : 0;
+        b = ReadBit() ? 1 : 0;
     }
     void ReadByteSeq(uint8& b)
     {
@@ -151,7 +151,7 @@ class SERVER_DECL ByteBuffer
 
     void WriteByteMask(uint8 b)
     {
-        writeBit(b);
+        WriteBit(b);
     }
     void WriteByteSeq(uint8 b)
     {
@@ -159,12 +159,12 @@ class SERVER_DECL ByteBuffer
             append<uint8>(b ^ 1);
     }
 
-    uint32 readBits(size_t bits)
+    uint32 ReadBits(size_t bits)
     {
         uint32 value = 0;
         for (int32 i = bits-1; i >= 0; --i)
         {
-            if(readBit())
+            if(ReadBit())
             {
                 value |= (1 << i);
             }

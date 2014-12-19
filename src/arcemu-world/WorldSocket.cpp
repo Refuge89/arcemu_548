@@ -322,8 +322,8 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 	addonsData.resize(addonSize);
 	recvPacket->read((uint8*)addonsData.contents(), addonSize);
 
-	recvPacket->readBit();
-	uint32 accountNameLength = recvPacket->readBits(11);
+	recvPacket->ReadBit();
+	uint32 accountNameLength = recvPacket->ReadBits(11);
 
 	account = recvPacket->ReadString(accountNameLength);
 
@@ -567,35 +567,35 @@ void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos)
 		return;
 	}
 
-	data.writeBit(code = AUTH_OK);
+	data.WriteBit(code = AUTH_OK);
 
 	if (code = AUTH_OK)
 	{
-		data.writeBits(realmNamesToSend.size(), 21);
+		data.WriteBits(realmNamesToSend.size(), 21);
 
 		for (std::map<uint32, std::string>::const_iterator itr = realmNamesToSend.begin(); itr != realmNamesToSend.end(); itr++)
 		{
-			data.writeBits(itr->second.size(), 8);
-			data.writeBits(itr->second.size(), 8);
-			data.writeBit(itr->first == 1);
+			data.WriteBits(itr->second.size(), 8);
+			data.WriteBits(itr->second.size(), 8);
+			data.WriteBit(itr->first == 1);
 		}
 
-		data.writeBits(classResult->GetRowCount(), 23);
-		data.writeBits(0, 21);
-		data.writeBit(0);
-		data.writeBit(0);
-		data.writeBit(0);
-		data.writeBit(0);
-		data.writeBits(raceResult->GetRowCount(), 23);
-		data.writeBit(0);
+		data.WriteBits(classResult->GetRowCount(), 23);
+		data.WriteBits(0, 21);
+		data.WriteBit(0);
+		data.WriteBit(0);
+		data.WriteBit(0);
+		data.WriteBit(0);
+		data.WriteBits(raceResult->GetRowCount(), 23);
+		data.WriteBit(0);
 	}
 
-	data.writeBit(queued);
+	data.WriteBit(queued);
 
 	if (queued)
-		data.writeBit(1);
+		data.WriteBit(1);
 
-	data.flushBits();
+	data.FlushBits();
 
 	if (queued)
 		data << uint32(0);
@@ -663,9 +663,9 @@ void WorldSocket::UpdateQueuePosition(uint32 Position)
 	LOG_ERROR("UpdateQueuePosition gets executed!!\n");
 	WorldPacket QueuePacket(SMSG_AUTH_RESPONSE, 21); // 17 + 4 if queued
 
-	QueuePacket.writeBit(true);                                  // has queue
-	QueuePacket.writeBit(false);                                 // unk queue-related
-	QueuePacket.writeBit(true);                                  // has account data
+	QueuePacket.WriteBit(true);                                  // has queue
+	QueuePacket.WriteBit(false);                                 // unk queue-related
+	QueuePacket.WriteBit(true);                                  // has account data
 
 	QueuePacket << uint32(0);                                    // Unknown - 4.3.2
 	QueuePacket << uint8(3);                     // 0 - normal, 1 - TBC, 2 - WotLK, 3 - CT. must be set in database manually for each account
@@ -830,8 +830,8 @@ void WorldSocket::SendAuthResponseError(uint8 code)
 {
 	LOG_ERROR("error code : %u", code);
 	WorldPacket packet(SMSG_AUTH_RESPONSE, 1);
-	packet.writeBit(0);      // has queue info
-	packet.writeBit(0);      // has account info
+	packet.WriteBit(0);      // has queue info
+	packet.WriteBit(0);      // has account info
 	packet << uint8(code);   // the error code
 
 	SendPacket(&packet);
