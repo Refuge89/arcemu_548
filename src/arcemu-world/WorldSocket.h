@@ -54,10 +54,8 @@ class SERVER_DECL WorldSocket : public Socket
 
 		ARCEMU_INLINE uint32 GetLatency() { return _latency; }
 
-		void Authenticate(uint8 code, bool queued, uint32 queuePos);
+		void Authenticate();
 		void InformationRetreiveCallback(WorldPacket & recvData, uint32 requestid);
-
-		void  UpdateQueuePosition(uint32 Position);
 
 		void OnRead();
 		void OnConnect();
@@ -73,7 +71,8 @@ class SERVER_DECL WorldSocket : public Socket
 		void UpdateQueuedPackets();
 		
 		void SendAuthResponseError(uint8 code);
-		void  HandleWoWConnection(WorldPacket* recvPacket);
+		void SendAuthResponse(uint8 code, bool queued, uint32 queuePos);
+		void HandleWoWConnection(WorldPacket* recvPacket);
 
 	protected:
 
@@ -87,7 +86,7 @@ class SERVER_DECL WorldSocket : public Socket
 		uint32 mSize;
 		uint32 mSeed;
 		uint32 mClientSeed;
-		uint32 mClientBuild;
+		uint16 mClientBuild;
 		uint32 mRequestID;
 		uint8 AuthDigest[20];
 
