@@ -27,6 +27,7 @@
 
 
 #define ECHO_PACKET_LOG_TO_CONSOLE 1
+#define CURRENT_BUILD_VERSION 18414
 
 #pragma pack(push, 1)
 
@@ -277,16 +278,8 @@ void WorldSocket::OnConnectTwo()
 void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 {
 	LOG_ERROR("WorldSocket::_HandleAuthSession\n");
-	//uint8 digest[20];
-    uint32 clientSeed;
-    uint8 security;
-    uint16 clientBuild;
-    uint32 id;
-    uint32 addonSize;
-    //LocaleConstant locale;
-    std::string account;
-    //SHA1Hash sha;
-    BigNumber k;
+	
+	_latency = getMSTime() - _latency;
     WorldPacket addonsData;
 
     recvPacket->read_skip<uint32>();
@@ -298,7 +291,7 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 	*recvPacket >> AuthDigest[0];
     recvPacket->read_skip<uint32>();
 	*recvPacket >> AuthDigest[11];
-    *recvPacket >> clientSeed;
+    *recvPacket >> mClientSeed;
 	*recvPacket >> AuthDigest[19];
     recvPacket->read_skip<uint8>();
     recvPacket->read_skip<uint8>();
@@ -311,7 +304,7 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 	*recvPacket >> AuthDigest[5];
 	*recvPacket >> AuthDigest[6];
 	*recvPacket >> AuthDigest[8];
-    *recvPacket >> clientBuild;
+    *recvPacket >> mClientBuild;
 	*recvPacket >> AuthDigest[17];
 	*recvPacket >> AuthDigest[7];
 	*recvPacket >> AuthDigest[13];
@@ -522,7 +515,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	if ((sWorld.GetSessionCount() < playerLimit) || pSession->HasGMPermissions())
 	{
 		LOG_ERROR("You're gonna get authed!!\n");
-		Authenticate(AUTH_OK, false, NULL);
+		Authenticate();
 	}
 	else if (playerLimit > 0)
 	{
@@ -532,7 +525,10 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 		Log.Debug("Queue", "%s added to queue in position %u", AccountName.c_str(), Position);
 
 		// Send packet so we know what we're doing
-		UpdateQueuePosition(Position);
+		//UpdateQueuePosition(Position);
+		//Authenticate(AUTH_WAIT_QUEUE, true, Position);
+		
+		SendAuthResponse(AUTH_WAIT_QUEUE, true, Position);
 	}
 	else
 	{
@@ -546,15 +542,36 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 
 }
 
-void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos)
+void WorldSocket::Authenticate()
 {
-	LOG_ERROR("We're authenticating baby!\n");
 	ARCEMU_ASSERT(pAuthenticationPacket != NULL);
 	mQueued = false;
 
 	if (mSession == NULL)
 		return;
 
+    SendAuthResponse(AUTH_OK, false, NULL);
+
+	WorldPacket cdata(SMSG_CLIENTCACHE_VERSION, 4);
+	LOG_ERROR("SMSG_CLIENTCACHE_VERSION\n");
+	cdata << uint32(CURRENT_BUILD_VERSION);
+	SendPacket(&cdata);
+
+	//sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
+	mSession->_latency = _latency;
+
+	delete pAuthenticationPacket;
+	pAuthenticationPacket = NULL;
+
+	sWorld.AddSession(mSession);
+	sWorld.AddGlobalSession(mSession);
+
+	if (mSession->HasGMPermissions())
+		sWorld.gmList.insert(mSession);
+}
+
+void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
+{
 	WorldPacket data(SMSG_AUTH_RESPONSE, 80);
 
 	std::map<uint32, std::string> realmNamesToSend;
@@ -568,9 +585,9 @@ void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos)
 		return;
 	}
 
-	data.WriteBit(code = AUTH_OK);
+	data.WriteBit(code == AUTH_OK);
 
-	if (code = AUTH_OK)
+	if (code == AUTH_OK)
 	{
 		data.WriteBits(realmNamesToSend.size(), 21);
 
@@ -639,47 +656,6 @@ void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos)
 	data << uint8(code);
 
 	SendPacket(&data);
-
-	WorldPacket cdata(SMSG_CLIENTCACHE_VERSION, 4);
-	LOG_ERROR("SMSG_CLIENTCACHE_VERSION\n");
-	cdata << uint32(18414);
-	SendPacket(&cdata);
-
-	//sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
-	mSession->_latency = _latency;
-
-	delete pAuthenticationPacket;
-	pAuthenticationPacket = NULL;
-
-	sWorld.AddSession(mSession);
-	sWorld.AddGlobalSession(mSession);
-
-	if (mSession->HasGMPermissions())
-		sWorld.gmList.insert(mSession);
-}
-
-void WorldSocket::UpdateQueuePosition(uint32 Position)
-{
-    // todo update structure to 5.4.8 18414
-	LOG_ERROR("UpdateQueuePosition gets executed!!\n");
-	WorldPacket QueuePacket(SMSG_AUTH_RESPONSE, 21); // 17 + 4 if queued
-
-	QueuePacket.WriteBit(true);                                  // has queue
-	QueuePacket.WriteBit(false);                                 // unk queue-related
-	QueuePacket.WriteBit(true);                                  // has account data
-
-	QueuePacket << uint32(0);                                    // Unknown - 4.3.2
-	QueuePacket << uint8(3);                     // 0 - normal, 1 - TBC, 2 - WotLK, 3 - CT. must be set in database manually for each account
-	QueuePacket << uint32(0);                                    // BillingTimeRemaining
-	QueuePacket << uint8(3);                     // 0 - normal, 1 - TBC, 2 - WotLK, 3 - CT. Must be set in database manually for each account.
-	QueuePacket << uint32(0);                                    // BillingTimeRested
-	QueuePacket << uint8(0);                                     // BillingPlanFlags
-
-	QueuePacket << uint8(0x1B);                                  // Waiting in queue (AUTH_WAIT_QUEUE I think)
-
-	QueuePacket << uint32(Position);            // position in queue
-
-	SendPacket(&QueuePacket);
 }
 
 void WorldSocket::_HandlePing(WorldPacket* recvPacket)
