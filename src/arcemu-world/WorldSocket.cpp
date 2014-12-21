@@ -31,51 +31,70 @@
 
 #pragma pack(push, 1)
 
-struct ServerPktHeader
+struct AuthPacketHeader
 {
-	ServerPktHeader(uint32 size, uint32 cmd, WowCrypt* _authCrypt) : size(size)
-	{
-		if (_authCrypt->IsInitialized())
-		{
-			uint32 data = (size << 13) | (cmd & NUM_MSG_TYPES);
-			memcpy(&header[0], &data, 4);
-			_authCrypt->EncryptSend((uint8*)&header[0], getHeaderLength());
-		}
-		else
-		{
-			// Dynamic header size is not needed anymore, we are using not encrypted part for only the first few packets
-			memcpy(&header[0], &size, 2);
-			memcpy(&header[2], &cmd, 2);
-		}
-	}
+    AuthPacketHeader(uint32 size, uint32 opcode) : len(0), server(true)
+    {
+        if(size > 0x7FFF)
+            raw[len++] = 0x80 | (0xFF&(size>>16));
+        raw[len++] = 0xFF & size;
+        raw[len++] = 0xFF & (size >> 8);
+        raw[len++] = 0xFF & cmd;
+        raw[len++] = 0xFF & (cmd >> 8);
+    }
 
-	uint8 getHeaderLength()
-	{
-		return 4;
-	}
+    uint32 getOpcode()
+    {
+        uint32 opcode = 0;
+        if(server)
+        {
+            uint8 length = len;
+            opcode = uint32(raw[--length])<<8;
+            opcode |= uint32(raw[--length]);
+        }
+        else
+        {
+            opcode |= uint32(raw[2]&0xFF)<<24;
+            opcode |= uint32(raw[3]&0xFF)<<16;
+            opcode |= uint32(raw[4]&0xFF)<<8;
+            opcode |= uint32(raw[5]&0xFF);
+        }
+        return opcode;
+    }
 
-	const uint32 size;
-	uint8 header[4];
+    uint32 getSize()
+    {
+        uint32 size = 0;
+        if(server)
+        {
+            uint8 length = 0;
+            if(raw[length] & 0x80)
+                size |= uint32(raw[length++]&0x7F)<<16;
+            size |= uint32(raw[length++]&0xFF)<<8;
+            size |= uint32(raw[length]&0xFF);
+        }
+        else
+        {
+            size |= uint32(raw[0]&0xFF)<<8;
+            size |= uint32(raw[1]&0xFF);
+        }
+        return size;
+    }
+
+    bool server;
+    uint8 len;
+    uint8 raw[6];
+}
+
+struct WorldPacketHeader
+{
+    WorldPacketHeader(uint32 size, uint32 opcode) : raw(((size&0x7FFFF)<<13)|(opcode & 0x1FFF)) {}
+    uint16 getOpcode() { return uint16(raw &0x1FFF); };
+    uint32 getSize() { return (raw>>13); };
+
+    uint32 raw;
 };
 
-struct AuthClientPktHeader
-{
-	uint16 size;
-	uint32 cmd;
-};
-
-struct WorldClientPktHeader
-{
-	uint16 size;
-	uint16 cmd;
-};
-
-
-struct ClientPktHeader
-{
-	uint16 size;
-	uint32 cmd;
-};
 
 #pragma pack(pop)
 
@@ -231,13 +250,23 @@ OUTPACKET_RESULT WorldSocket::_OutPacket(uint32 opcode, size_t len, const void* 
 
 	// Packet logger :)
 	sWorldLog.LogPacket((uint32)len, opcode, (const uint8*)data, 1, (mSession ? mSession->GetAccountId() : 0));
+    if(_crypt.IsInitialized())
+    {
+	    //printf("Sent opcode: %d\n", opcode);
+        WorldPacketHeader header(len, opcode);
+	    _crypt.EncryptSend(((uint8*)header.raw), 4);
 
-	//printf("Sent opcode: %d\n", opcode);
-	ServerPktHeader header(uint32(len + 2), opcode, &_crypt);
-	_crypt.EncryptSend(((uint8*)header.header), header.getHeaderLength());
+	    // Pass the header to our send buffer
+	    rv = BurstSend((const uint8*)header.raw, 4);
+    }
+    else
+    {
+	    //printf("Sent opcode: %d\n", opcode);
+        AuthPacketHeader header(len+2, opcode);
 
-	// Pass the header to our send buffer
-	rv = BurstSend((const uint8*)&header.header, header.getHeaderLength());
+	    // Pass the header to our send buffer
+	    rv = BurstSend((const uint8*)header.raw, header.len);
+    }
 
 	// Pass the rest of the packet to our send buffer (if there is any)
 	if (len > 0 && rv)
@@ -714,21 +743,38 @@ void WorldSocket::OnRead()
 		// Check for the header if we don't have any bytes to wait for.
 		if (mRemaining == 0)
 		{
-			if (readBuffer.GetSize() < 6)
-			{
-				// No header in the packet, let's wait.
-				return;
-			}
-
 			// Copy from packet buffer into header local var
-			ClientPktHeader Header;
-			readBuffer.Read((uint8*)&Header, 6);
+            if(_crypt.IsInitialized())
+            {
+			    if (readBuffer.GetSize() < 4)
+			    {
+				    // No header in the packet, let's wait.
+				    return;
+			    }
 
-			// Decrypt the header
-			_crypt.DecryptRecv((uint8*)&Header, sizeof(ClientPktHeader));
+                WorldPacketHeader Header;
+                readBuffer.Read((uint8*)Header.raw, 4);
+                // Decrypt the header
+                _crypt.DecryptRecv((uint8*)Header.raw, 4);
 
-			mRemaining = mSize = Header.size -= 4;
-			mOpcode = Header.cmd;
+                mRemaining = mSize = Header.getSize();
+                mOpcode = Header.getOpcode();
+            }
+            else
+            {
+                if (readBuffer.GetSize() < 6)
+			    {
+				    // No header in the packet, let's wait.
+				    return;
+			    }
+
+                AuthPacketHeader header;
+                header.server = false;
+                readBuffer.Read((uint8*)Header.raw, 6);
+
+                mRemaining = mSize = Header.getSize()-4;
+                mOpcode = Header.getOpcode();
+            }
 		}
 
 		WorldPacket* Packet;
