@@ -513,8 +513,8 @@ enum Opcodes
     SMSG_START_MIRROR_TIMER                         = 0x1D9,	// implemented
     SMSG_PAUSE_MIRROR_TIMER                         = 0x1DA,	/// TODO: implement
     SMSG_STOP_MIRROR_TIMER                          = 0x1DB,	// implemented
-    CMSG_PING                                       = 0x444D,	// 15595
-    SMSG_PONG                                       = 0x4D42,	// 15595
+	CMSG_PING										= 0x0012,	// 5.4.8 18414
+	SMSG_PONG										= 0x1969,	// 5.4.8 18414
     SMSG_CLEAR_COOLDOWN                             = 0x1DE,	// implemented
     SMSG_GAMEOBJECT_PAGETEXT                        = 0x1DF,	// implemented
     CMSG_SETSHEATHED                                = 0x1E0,	// implemented
@@ -1274,8 +1274,8 @@ enum Opcodes
     NUM_MSG_TYPES                                   = 0xFFFF,	// max msg number
 	
 	MSG_WOW_CONNECTION                              = 0x4F57,    // Opcode NEVER Changes with versions
-
-	CMSG_READY_FOR_ACCOUNT_DATA_TIMES               = 0x2B16,    // implemented
+	 
+	CMSG_READY_FOR_ACCOUNT_DATA_TIMES				= 0x031C,    // 5.4.8 18414
 	CMSG_VIOLENCE_LEVEL                             = 0x7816,    // nothing to implement -- double check this
 	CMSG_LOG_DISCONNECT                             = 0x446D,    // nothing to implement
 	CMSG_LOAD_SCREEN                                = 0x2422,    // nothing to implement

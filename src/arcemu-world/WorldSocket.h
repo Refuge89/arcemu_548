@@ -87,7 +87,7 @@ class SERVER_DECL WorldSocket : public Socket
 		uint32 mSize;
 		uint32 mSeed;
 		uint32 mClientSeed;
-		uint32 mClientBuild;
+		uint16 mClientBuild;
 		uint32 mRequestID;
 		uint8 AuthDigest[20];
 
@@ -101,6 +101,9 @@ class SERVER_DECL WorldSocket : public Socket
 		bool mQueued;
 		bool m_nagleEanbled;
 		string* m_fullAccountName;
+		uint32 addonSize;
+		//LocaleConstant locale;
+		std::string account;
 };
 
 

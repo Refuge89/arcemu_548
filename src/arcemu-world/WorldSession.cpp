@@ -535,7 +535,7 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[CMSG_CHAR_ENUM].status = STATUS_AUTHED;
 
 	WorldPacketHandlers[CMSG_CHAR_CREATE].handler =
-	    &WorldSession::HandleCharCreateOpcode;
+		&WorldSession::HandleCharCreateOpcode;
 	WorldPacketHandlers[CMSG_CHAR_CREATE].status = STATUS_AUTHED;
 
 	WorldPacketHandlers[CMSG_CHAR_DELETE].handler =
