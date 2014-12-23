@@ -33,30 +33,27 @@ class SERVER_DECL ByteBuffer
 
 		const static size_t DEFAULT_SIZE = 0x1000;
 
-		ByteBuffer() : _rpos(0), _wpos(0), _bitpos(8), _curbitval(0)
+		ByteBuffer(): _rpos(0), _wpos(0)
 		{
 			_storage.reserve(DEFAULT_SIZE);
-			//_bitpos = 8;
-		    //_curbitval = 0;
+			_bitpos = 8;
+		    _curbitval = 0;
 		}
-		ByteBuffer(size_t res) : _rpos(0), _wpos(0), _bitpos(8), _curbitval(0)
+		ByteBuffer(size_t res): _rpos(0), _wpos(0)
 		{
 			_storage.reserve(res);
-			//_bitpos = 8;
-		    //_curbitval = 0;
+			_bitpos = 8;
+		    _curbitval = 0;
 		}
-		ByteBuffer(const ByteBuffer &buf) : _rpos(buf._rpos), _wpos(buf._wpos),
-			_bitpos(buf._bitpos), _curbitval(buf._curbitval), _storage(buf._storage)
-		{
-
-		}
+		ByteBuffer(const ByteBuffer & buf): _rpos(buf._rpos), _wpos(buf._wpos), _storage(buf._storage), _bitpos(buf._bitpos), _curbitval(buf._curbitval) { }
+		virtual ~ByteBuffer() {}
 
 		void clear()
 		{
 			_storage.clear();
 			_rpos = _wpos = 0;
-			//_bitpos = 8;
-		   // _curbitval = 0;
+			_bitpos = 8;
+		    _curbitval = 0;
 		}
 
 		//template <typename T> void insert(size_t pos, T value) {
@@ -99,17 +96,6 @@ class SERVER_DECL ByteBuffer
         for (int32 i = bits-1; i >= 0; --i)
             WriteBit((value >> i) & 1);
     }
-
-	// get account name (new in cataclysm)
-	 /*std::string ReadString(uint32 count)
-        {
-            std::string out;
-            uint32 start = _rpos;
-            while (_rpos < size() && _rpos < start + count)       // prevent crash at wrong string format in packet
-                out += read<char>();
-
-            return out;
-        }*/
 
 	std::string ReadString(uint32 length)
         {
@@ -414,14 +400,6 @@ class SERVER_DECL ByteBuffer
 			return _wpos;
 		}
 
-		template<typename T>
-		void read_skip() { read_skip(sizeof(T)); }
-
-		void read_skip(size_t skip)
-		{
-			_rpos += skip;
-		}
-
 		template <typename T> T read()
 		{
 			T r = read<T>(_rpos);
@@ -443,20 +421,21 @@ class SERVER_DECL ByteBuffer
 
 		void read(uint8* dest, size_t len)
 		{
-			if (_rpos + len > size())
+			if(LIKELY(_rpos + len <= size()))
+			{
+				memcpy(dest, &_storage[_rpos], len);
+			}
+			else
+			{
+				//throw error();
 				memset(dest, 0, len);
-
-			std::memcpy(dest, &_storage[_rpos], len);
-			_rpos += len;			
+			}
+			_rpos += len;
 		}
-
-		uint8 * contents() { return &_storage[0]; }
 
 		const uint8* contents() const { return &_storage[0]; };
 
-		size_t size() const { return _storage.size(); }
-		bool empty() const { return _storage.empty(); }
-		
+		ARCEMU_INLINE size_t size() const { return _storage.size(); };
 		// one should never use resize probably
 		void resize(size_t newsize)
 		{
@@ -609,7 +588,12 @@ class SERVER_DECL ByteBuffer
 	    ARCEMU_INLINE void ResetRead()
 	    {
 		_rpos = 0;
-	    }	   
+	    }
+
+	    ARCEMU_INLINE void read_skip(uint32 byte_count)
+	    {
+		_rpos += byte_count;
+	    }
 
 	protected:
 		// read and write positions
@@ -693,25 +677,6 @@ template <typename K, typename V> ByteBuffer & operator>>(ByteBuffer & b, std::m
 		m.insert(make_pair(k, v));
 	}
 	return b;
-}
-
-template<>
-inline void ByteBuffer::read_skip<char*>()
-{
-	std::string temp;
-	*this >> temp;
-}
-
-template<>
-inline void ByteBuffer::read_skip<char const*>()
-{
-	read_skip<char*>();
-}
-
-template<>
-inline void ByteBuffer::read_skip<std::string>()
-{
-	read_skip<char*>();
 }
 
 #endif

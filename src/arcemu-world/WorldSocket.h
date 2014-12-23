@@ -54,17 +54,13 @@ class SERVER_DECL WorldSocket : public Socket
 
 		ARCEMU_INLINE uint32 GetLatency() { return _latency; }
 
-		void Authenticate(uint8 code, bool queued, uint32 queuePos);
+		void Authenticate();
 		void InformationRetreiveCallback(WorldPacket & recvData, uint32 requestid);
-
-		void  UpdateQueuePosition(uint32 Position);
 
 		void OnRead();
 		void OnConnect();
 		void OnDisconnect();
-
-		//OnConnectTwo - should change this -- something wrong with more packets in the same function
-		void OnConnectTwo();
+		void OnConnectTwo(); // todo change me, no need for thousand of functions
 
 		ARCEMU_INLINE void SetSession(WorldSession* session) { mSession = session; }
 		ARCEMU_INLINE WorldSession* GetSession() { return mSession; }
@@ -73,7 +69,8 @@ class SERVER_DECL WorldSocket : public Socket
 		void UpdateQueuedPackets();
 		
 		void SendAuthResponseError(uint8 code);
-		void  HandleWoWConnection(WorldPacket* recvPacket);
+		void SendAuthResponse(uint8 code, bool queued, uint32 queuePos);
+		void HandleWoWConnection(WorldPacket* recvPacket);
 
 	protected:
 
@@ -90,6 +87,8 @@ class SERVER_DECL WorldSocket : public Socket
 		uint16 mClientBuild;
 		uint32 mRequestID;
 		uint8 AuthDigest[20];
+		uint32 addonSize;
+		string account;
 
 		WorldSession* mSession;
 		WorldPacket* pAuthenticationPacket;
@@ -101,11 +100,7 @@ class SERVER_DECL WorldSocket : public Socket
 		bool mQueued;
 		bool m_nagleEanbled;
 		string* m_fullAccountName;
-		uint32 addonSize;
-		//LocaleConstant locale;
-		std::string account;
 };
-
 
 static inline void FastGUIDPack(ByteBuffer & buf, const uint64 & oldguid)
 {

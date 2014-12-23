@@ -284,7 +284,7 @@ void WorldSocket::OnConnect()
 	sWorld.mAcceptedConnections++;
 	_latency = getMSTime();
 
-	WorldPacket packet(MSG_WOW_CONNECTION, 70);
+	WorldPacket packet(MSG_WOW_CONNECTION, 46);
 	packet << "RLD OF WARCRAFT CONNECTION - SERVER TO CLIENT";
 	SendPacket(&packet);
 }
@@ -519,7 +519,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	uint32 playerLimit = sWorld.GetPlayerLimit();
 	if ((sWorld.GetSessionCount() < playerLimit) || pSession->HasGMPermissions())
 	{
-		Authenticate(AUTH_OK, false, NULL);
+		Authenticate();
 	}
 	else if (playerLimit > 0)
 	{
@@ -529,7 +529,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 		Log.Debug("Queue", "%s added to queue in position %u", AccountName.c_str(), Position);
 
 		// Send packet so we know what we're doing
-		UpdateQueuePosition(Position);
+		SendAuthResponse(AUTH_WAIT_QUEUE, true, Position);
 	}
 	else
 	{
@@ -543,7 +543,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 
 }
 
-void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos)
+void WorldSocket::Authenticate()
 {
 	ARCEMU_ASSERT(pAuthenticationPacket != NULL);
 	mQueued = false;
@@ -551,6 +551,27 @@ void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos)
 	if (mSession == NULL)
 		return;
 
+	SendAuthResponse(AUTH_OK, false, NULL);
+
+	WorldPacket cdata(SMSG_CLIENTCACHE_VERSION, 4);
+	cdata << uint32(18414);
+	SendPacket(&cdata);
+
+	//sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
+	mSession->_latency = _latency;
+
+	delete pAuthenticationPacket;
+	pAuthenticationPacket = NULL;
+
+	sWorld.AddSession(mSession);
+	sWorld.AddGlobalSession(mSession);
+
+	if (mSession->HasGMPermissions())
+		sWorld.gmList.insert(mSession);
+}
+
+void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
+{
 	WorldPacket data(SMSG_AUTH_RESPONSE, 80);
 
 	QueryResult* classResult = CharacterDatabase.Query("SELECT class, expansion FROM realm_classes WHERE realmId = %u", 1);
@@ -619,46 +640,6 @@ void WorldSocket::Authenticate(uint8 code, bool queued, uint32 queuePos)
 	data << uint8(code);
 
 	SendPacket(&data);
-
-	WorldPacket cdata(SMSG_CLIENTCACHE_VERSION, 4);
-	cdata << uint32(18414);
-	SendPacket(&cdata);
-
-	//sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
-	mSession->_latency = _latency;
-
-	delete pAuthenticationPacket;
-	pAuthenticationPacket = NULL;
-
-	sWorld.AddSession(mSession);
-	sWorld.AddGlobalSession(mSession);
-
-	if (mSession->HasGMPermissions())
-		sWorld.gmList.insert(mSession);
-}
-
-void WorldSocket::UpdateQueuePosition(uint32 Position)
-{
-    // todo update structure to 5.4.8 18414
-	LOG_ERROR("UpdateQueuePosition gets executed!!\n");
-	WorldPacket QueuePacket(SMSG_AUTH_RESPONSE, 21); // 17 + 4 if queued
-
-	QueuePacket.WriteBit(true);                                  // has queue
-	QueuePacket.WriteBit(false);                                 // unk queue-related
-	QueuePacket.WriteBit(true);                                  // has account data
-
-	QueuePacket << uint32(0);                                    // Unknown - 4.3.2
-	QueuePacket << uint8(3);                     // 0 - normal, 1 - TBC, 2 - WotLK, 3 - CT. must be set in database manually for each account
-	QueuePacket << uint32(0);                                    // BillingTimeRemaining
-	QueuePacket << uint8(3);                     // 0 - normal, 1 - TBC, 2 - WotLK, 3 - CT. Must be set in database manually for each account.
-	QueuePacket << uint32(0);                                    // BillingTimeRested
-	QueuePacket << uint8(0);                                     // BillingPlanFlags
-
-	QueuePacket << uint8(0x1B);                                  // Waiting in queue (AUTH_WAIT_QUEUE I think)
-
-	QueuePacket << uint32(Position);            // position in queue
-
-	SendPacket(&QueuePacket);
 }
 
 void WorldSocket::_HandlePing(WorldPacket* recvPacket)

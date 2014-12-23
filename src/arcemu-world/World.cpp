@@ -960,7 +960,7 @@ void World::UpdateQueuedSessions(uint32 diff)
 			if(QueuedSocket->GetSession())
 			{
 				QueuedSocket->GetSession()->deleteMutex.Acquire();
-				QueuedSocket->Authenticate(AUTH_OK, false, NULL);
+				QueuedSocket->Authenticate();
 				QueuedSocket->GetSession()->deleteMutex.Release();
 			}
 		}
@@ -976,7 +976,7 @@ void World::UpdateQueuedSessions(uint32 diff)
 		uint32 Position = 1;
 		while(iter != mQueuedSessions.end())
 		{
-			(*iter)->UpdateQueuePosition(Position++);
+			(*iter)->SendAuthResponse(0x1B, true, Position++);
 			if(iter == mQueuedSessions.end())
 				break;
 			else
