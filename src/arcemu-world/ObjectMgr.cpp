@@ -2513,6 +2513,7 @@ Player* ObjectMgr::CreatePlayer(uint8 _class)
 	switch(_class)
 	{
 		case WARRIOR:
+			LOG_ERROR("WAR");
 			result = new Warrior(guid);
 			break;
 		case PALADIN:
