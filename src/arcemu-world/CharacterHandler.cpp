@@ -28,37 +28,6 @@ uint64 MAKE_NEW_GUID(uint32 l, uint32 e, uint32 h)
 	return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == 0xF0C0 || h == 0xF102) ? 48 : 52)));
 }
 
-inline uint8 ObfuscateByte(uint8 x)
-{
-	return (x ^ 0x01); //!!obfuscating 0 might crash the client sometimes
-}
-
-inline void GUID_un_obfuscate(uint64 &guid)
-{
-	uint8 *guid_bytes = (uint8 *)&guid;
-	for (uint32 i = 0; i<8; i++)
-		if (guid_bytes[i])
-			guid_bytes[i] = ObfuscateByte(guid_bytes[i]);
-}
-
-inline void GUID_un_obfuscate(uint8 guid_bytes[8])
-{
-	for (uint32 i = 0; i<8; i++)
-		if (guid_bytes[i])
-			guid_bytes[i] = ObfuscateByte(guid_bytes[i]);
-}
-
-inline void GUID_obfuscate(uint64 &guid)
-{
-	GUID_un_obfuscate(guid);
-}
-
-inline void GUID_obfuscate(uint8 guid_bytes[8])
-{
-	for (uint32 i = 0; i<8; i++)
-		guid_bytes[i] = ObfuscateByte(guid_bytes[i]);
-}
-
 LoginErrorCode VerifyName(const char* name, size_t nlen)
 {
 	const char* p;
