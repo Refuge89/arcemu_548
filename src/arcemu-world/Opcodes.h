@@ -94,7 +94,7 @@ enum Opcodes
 	SMSG_CHAR_CREATE								= 0x1CAA, // 18414
 	SMSG_CHAR_ENUM									= 0x11C3, // 18414
 	SMSG_CHAR_DELETE								= 0x0C9F, // 18414
-	CMSG_PLAYER_LOGIN								= 0x0000,
+	CMSG_PLAYER_LOGIN								= 0x158F, // 5.4.8 18414
 	SMSG_NEW_WORLD									= 0x0000,
 	SMSG_TRANSFER_PENDING							= 0x0000,
 	SMSG_TRANSFER_ABORTED							= 0x0000,
@@ -603,7 +603,7 @@ enum Opcodes
     CMSG_GUILD_DEL_RANK                             = 0x233,	// implemented
     CMSG_GUILD_SET_PUBLIC_NOTE                      = 0x234,	// implemented
     CMSG_GUILD_SET_OFFICER_NOTE                     = 0x235,	// implemented
-    SMSG_LOGIN_VERIFY_WORLD                         = 0x2005,	// 15595
+	SMSG_LOGIN_VERIFY_WORLD							= 0x1C0F,	// 5.4.8 18414
     CMSG_CLEAR_EXPLORATION                          = 0x237,	// GM client only
     CMSG_SEND_MAIL                                  = 0x238,	// implemented
     SMSG_SEND_MAIL_RESULT                           = 0x239,	// implemented
@@ -1006,7 +1006,7 @@ enum Opcodes
     MSG_RAID_READY_CHECK_FINISHED                   = 0x3C6,	/// TODO: implement
     CMSG_COMPLAIN                                   = 0x3C7,	// implemented
     SMSG_COMPLAIN_RESULT                            = 0x3C8,	// implemented
-    SMSG_FEATURE_SYSTEM_STATUS                      = 0x3C9,	// implemented
+	SMSG_FEATURE_SYSTEM_STATUS						= 0x16BB,	// 5.4.8 18414
     CMSG_GM_SHOW_COMPLAINTS                         = 0x3CA,	// GM client only
     CMSG_GM_UNSQUELCH                               = 0x3CB,	// GM client only
     CMSG_CHANNEL_SILENCE_VOICE                      = 0x3CC,	/// TODO: implement
@@ -1276,9 +1276,9 @@ enum Opcodes
 	MSG_WOW_CONNECTION                              = 0x4F57,    // Opcode NEVER Changes with versions
 	 
 	CMSG_READY_FOR_ACCOUNT_DATA_TIMES				= 0x031C,    // 5.4.8 18414
-	CMSG_VIOLENCE_LEVEL                             = 0x7816,    // nothing to implement -- double check this
+	CMSG_VIOLENCE_LEVEL								= 0x0040,    // 5.4.8 18414
 	CMSG_LOG_DISCONNECT                             = 0x446D,    // nothing to implement
-	CMSG_LOAD_SCREEN                                = 0x2422,    // nothing to implement
+	CMSG_LOAD_SCREEN								= 0x1DBD,    // 5.4.8 18414
 	CMSG_UI_TIME_REQUEST                            = 0x4605,    // implemented
 	SMSG_UI_TIME                                    = 0x4A14,    // implemented
 

@@ -823,7 +823,7 @@ class SERVER_DECL Player : public Unit
 		/************************************************************************/
 		/* Skill System															*/
 		/************************************************************************/
-
+		static bool BuildEnumData(QueryResult* result, ByteBuffer* dataBuffer, ByteBuffer* bitBuffer);
 		void _AdvanceSkillLine(uint32 SkillLine, uint32 Count = 1);
 		void _AddSkillLine(uint32 SkillLine, uint32 Current, uint32 Max);
 		uint32 _GetSkillLineMax(uint32 SkillLine);

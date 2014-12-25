@@ -65,7 +65,7 @@ class SERVER_DECL ByteBuffer
 		append((uint8 *)&value, sizeof(value));
 	}
 
-		 void FlushBits()
+	void FlushBits()
     {
         if (_bitpos == 8)
             return;
@@ -75,7 +75,7 @@ class SERVER_DECL ByteBuffer
         _bitpos = 8;
     }
 
-		 bool WriteBit(uint32 bit)
+	bool WriteBit(uint32 bit)
     {
         --_bitpos;
         if (bit)
@@ -139,11 +139,18 @@ class SERVER_DECL ByteBuffer
     {
         WriteBit(b);
     }
-    void WriteByteSeq(uint8 b)
-    {
-        if (b != 0)
-            append<uint8>(b ^ 1);
-    }
+
+	void WriteBytesSeq(ObjectGuid guid, uint8 order[8])
+	{
+		for (uint8 i = 0; i < 8; ++i)
+			WriteByteSeq(guid[order[i]]);
+	}
+
+	void WriteByteSeq(uint8 b)
+	{
+		if (b != 0)
+			append<uint8>(b ^ 1);
+	}
 
     uint32 ReadBits(size_t bits)
     {

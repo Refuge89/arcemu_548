@@ -33,6 +33,16 @@
 #pragma warning(disable:4251)		// dll-interface bullshit
 #endif
 
+#define ARCEMU_LITTLEENDIAN 0
+#define ARCEMU_BIGENDIAN    1
+
+#if !defined(ARCEMU_ENDIAN)
+#  if defined (ACE_BIG_ENDIAN)
+#    define ARCEMU_ENDIAN ARCEMU_BIGENDIAN
+#  else
+#    define ARCEMU_ENDIAN ARCEMU_LITTLEENDIAN
+#  endif
+#endif
 enum TimeVariables
 {
     TIME_SECOND = 1,
