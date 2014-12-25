@@ -663,6 +663,7 @@ bool Player::BuildEnumData(QueryResult* result, ByteBuffer* dataBuffer, ByteBuff
 	uint32 i;
 	ItemPrototype* proto;
 	QueryResult* res;
+	CreatureInfo* info = NULL;
 	uint32 num = 0;
 	uint32 MaxAvailCharLevel = 0;
 	Field* fields;
@@ -706,13 +707,38 @@ bool Player::BuildEnumData(QueryResult* result, ByteBuffer* dataBuffer, ByteBuff
 			if(flags & PLAYER_FLAG_NOCLOAK)                           ///////   Area      ////
 				charFlags |= 0x00000800;	//Cloak not displayed*/   ////////////////////////
 
+			uint32 petDisplayId;
+			uint32 petLevel;
+			uint32 petFamily;
+			
+			if(Class == WARLOCK || Class == HUNTER)
+			{
+				res = CharacterDatabase.Query("SELECT entry, level FROM playerpets WHERE ownerguid = %u AND MOD( active, 10 ) = 1 AND alive = TRUE;", Arcemu::Util::GUID_LOPART(guid));
 
-			// toDo: show pet
+				if(res)
+				{
+					petLevel = res->Fetch()[1].GetUInt32();
+					info = CreatureNameStorage.LookupEntry(res->Fetch()[0].GetUInt32());
+					delete res;
+				}
+				else
+					info = NULL;
+			}
+			else
+				info = NULL;
 
-			uint32 petDisplayId = 0;
-			uint32 petLevel = 0;
-			uint32 petFamily = 0;
-
+			if(info)
+			{
+			    petDisplayId = uint32(info->Male_DisplayID);
+				petFamily = uint32(info->Family);
+			}
+			else
+			{
+			    petDisplayId = 0;
+				petLevel = 0;
+				petFamily = 0;
+			}
+		    
 			bitBuffer->WriteBit(guildGuid[4]);
 			bitBuffer->WriteBit(guid[0]);
 			bitBuffer->WriteBit(guildGuid[3]);
