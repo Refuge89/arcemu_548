@@ -1746,13 +1746,13 @@ class SERVER_DECL Unit : public Object
 		uint64 GetTargetGUID() { return GetUInt64Value(UNIT_FIELD_TARGET); }
 
 		void SetChannelSpellTargetGUID(uint64 GUID) { SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, GUID); }
-		void SetChannelSpellId(uint32 SpellId) { SetUInt32Value(UNIT_CHANNEL_SPELL, SpellId); }
+		void SetChannelSpellId(uint32 SpellId) { SetUInt32Value(UNIT_FIELD_CHANNEL_SPELL, SpellId); }
 
 		uint64 GetChannelSpellTargetGUID() { return GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT); }
-		uint32 GetChannelSpellId() { return GetUInt32Value(UNIT_CHANNEL_SPELL); }
+		uint32 GetChannelSpellId() { return GetUInt32Value(UNIT_FIELD_CHANNEL_SPELL); }
 
-		void SetEquippedItem(uint8 slot, uint32 id) { SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + slot, id); }
-		uint32 GetEquippedItem(uint8 slot) { return GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + slot); }
+		void SetEquippedItem(uint8 slot, uint32 id) { SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + slot, id); }
+		uint32 GetEquippedItem(uint8 slot) { return GetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + slot); }
 
 		void SetBaseAttackTime(uint8 slot, uint32 time) { SetUInt32Value(UNIT_FIELD_BASEATTACKTIME + slot, time); }
 		uint32 GetBaseAttackTime(uint8 slot) { return GetUInt32Value(UNIT_FIELD_BASEATTACKTIME + slot); }

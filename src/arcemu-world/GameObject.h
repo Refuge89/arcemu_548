@@ -294,31 +294,31 @@ class SERVER_DECL GameObject : public Object
 		uint32 GetOverrides() { return m_overrides; }
 
 		//Easy Functions
-		void SetDisplayId(uint32 id) { SetUInt32Value(GAMEOBJECT_DISPLAYID, id); }
-		uint32 GetDisplayId() { return GetUInt32Value(GAMEOBJECT_DISPLAYID); }
+		void SetDisplayId(uint32 id) { SetUInt32Value(GO_FIELD_DISPLAYID, id); }
+		uint32 GetDisplayId() { return GetUInt32Value(GO_FIELD_DISPLAYID); }
 
-		void SetParentRotation(uint8 rot, float value) { SetFloatValue(GAMEOBJECT_PARENTROTATION + rot, value); }
-		float GetParentRotation(uint8 rot) { return GetFloatValue(GAMEOBJECT_PARENTROTATION + rot); }
+		void SetParentRotation(uint8 rot, float value) { SetFloatValue(GO_FIELD_PARENTROTATION + rot, value); }
+		float GetParentRotation(uint8 rot) { return GetFloatValue(GO_FIELD_PARENTROTATION + rot); }
 
 		void SetFaction(uint32 id)
 		{
-			SetUInt32Value(GAMEOBJECT_FACTION, id);
+			SetUInt32Value(GO_FIELD_FACTIONTEMPLATE, id);
 			_setFaction();
 		}
-		uint32 GetFaction() { return GetUInt32Value(GAMEOBJECT_FACTION); }
+		uint32 GetFaction() { return GetUInt32Value(GO_FIELD_FACTIONTEMPLATE); }
 
-		void SetLevel(uint32 level) { SetUInt32Value(GAMEOBJECT_LEVEL, level); }
-		uint32 GetLevel() { return GetUInt32Value(GAMEOBJECT_LEVEL); }
+		void SetLevel(uint32 level) { SetUInt32Value(GO_FIELD_LEVEL, level); }
+		uint32 GetLevel() { return GetUInt32Value(GO_FIELD_LEVEL); }
 
 		void SetType(uint8 type) { SetByte(GAMEOBJECT_BYTES_1, 1, type); }
 		uint8 GetType() { return GetByte(GAMEOBJECT_BYTES_1, 1); }
 		
-		void SetFlags( uint32 flags ){ SetUInt32Value( GAMEOBJECT_FLAGS, flags ); }		
-		uint32 GetFlags(){ return GetUInt32Value( GAMEOBJECT_FLAGS ); }
-		void RemoveFlags( uint32 flags ){ RemoveFlag( GAMEOBJECT_FLAGS, flags ); }
+		void SetFlags( uint32 flags ){ SetUInt32Value( GO_FIELD_FLAGS, flags ); }		
+		uint32 GetFlags(){ return GetUInt32Value( GO_FIELD_FLAGS ); }
+		void RemoveFlags( uint32 flags ){ RemoveFlag( GO_FIELD_FLAGS, flags ); }
 		
 		bool HasFlags( uint32 flags ){
-			if( HasFlag( GAMEOBJECT_FLAGS, flags ) != 0 )
+			if( HasFlag( GO_FIELD_FLAGS, flags ) != 0 )
 				return true;
 			else
 				return false;

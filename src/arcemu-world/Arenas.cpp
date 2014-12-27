@@ -268,7 +268,7 @@ void Arena::OnStart()
 	/* open gates */
 	for(set<GameObject*>::iterator itr = m_gates.begin(); itr != m_gates.end(); ++itr)
 	{
-		(*itr)->SetUInt32Value(GAMEOBJECT_FLAGS, 64);
+		(*itr)->SetUInt32Value(GO_FIELD_FLAGS, 64);
 		(*itr)->SetByte(GAMEOBJECT_BYTES_1, 0, 0);
 	}
 

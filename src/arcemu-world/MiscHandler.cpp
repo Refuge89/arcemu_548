@@ -458,7 +458,7 @@ void WorldSession::HandleLootReleaseOpcode(WorldPacket & recv_data)
 					if(_player->HasQuestForItem(i->item.itemproto->ItemId))
 						return;
 				}
-			pCreature->BuildFieldUpdatePacket(_player, UNIT_DYNAMIC_FLAGS, 0);
+			pCreature->BuildFieldUpdatePacket(_player, OBJECT_FIELD_DYNAMIC_FLAGS, 0);
 
 			if(!pCreature->Skinned)
 			{
@@ -594,7 +594,7 @@ void WorldSession::HandleLootReleaseOpcode(WorldPacket & recv_data)
 		{
 			plr->bShouldHaveLootableOnCorpse = false;
 			plr->loot.items.clear();
-			plr->RemoveFlag(UNIT_DYNAMIC_FLAGS, U_DYN_FLAG_LOOTABLE);
+			plr->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, U_DYN_FLAG_LOOTABLE);
 		}
 	}
 	else if(GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_ITEM)     // Loot from items, eg. sacks, milling, prospecting...
@@ -1493,11 +1493,11 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 		case GAMEOBJECT_TYPE_DOOR:
 			{
 				// cebernic modified this state = 0 org =1
-				if((obj->GetByte(GAMEOBJECT_BYTES_1, 0) == 0))  //&& (obj->GetUInt32Value(GAMEOBJECT_FLAGS) == 33) )
+				if((obj->GetByte(GAMEOBJECT_BYTES_1, 0) == 0))  //&& (obj->GetUInt32Value(GO_FIELD_FLAGS) == 33) )
 					obj->EventCloseDoor();
 				else
 				{
-					obj->SetFlag(GAMEOBJECT_FLAGS, 1);   // lock door
+					obj->SetFlag(GO_FIELD_FLAGS, 1);   // lock door
 					obj->SetByte(GAMEOBJECT_BYTES_1, 0, 0);
 					sEventMgr.AddEvent(obj, &GameObject::EventCloseDoor, EVENT_GAMEOBJECT_DOOR_CLOSE, 20000, 1, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
 				}

@@ -2718,7 +2718,7 @@ void Aura::SpellAuraModStealth(bool apply)
 
 		m_target->SetFlag(UNIT_FIELD_BYTES_1, 0x020000);
 		if(m_target->IsPlayer())
-			m_target->SetFlag(PLAYER_FIELD_BYTES2, 0x2000);
+			m_target->SetFlag(PLAYER_FIELD_BYTES, 0x2000);
 
 		m_target->RemoveAurasByInterruptFlag(AURA_INTERRUPT_ON_STEALTH | AURA_INTERRUPT_ON_INVINCIBLE);
 		m_target->m_stealthLevel += mod->m_amount;
@@ -2801,7 +2801,7 @@ void Aura::SpellAuraModStealth(bool apply)
 
 			if(p_target != NULL)
 			{
-				p_target->RemoveFlag(PLAYER_FIELD_BYTES2, 0x2000);
+				p_target->RemoveFlag(PLAYER_FIELD_BYTES, 0x2000);
 				p_target->SendSpellCooldownEvent(m_spellProto->Id);
 
 				if(p_target->m_outStealthDamageBonusPeriod && p_target->m_outStealthDamageBonusPct)
@@ -2859,7 +2859,7 @@ void Aura::SpellAuraModInvisibility(bool apply)
 		if(m_target->IsPlayer())
 		{
 			if(GetSpellId() == 32612)
-				TO< Player* >(m_target)->SetFlag(PLAYER_FIELD_BYTES2, 0x4000);   //Mage Invis self visual
+				TO< Player* >(m_target)->SetFlag(PLAYER_FIELD_BYTES, 0x4000);   //Mage Invis self visual
 		}
 
 		m_target->RemoveAurasByInterruptFlag(AURA_INTERRUPT_ON_INVINCIBLE);
@@ -2870,7 +2870,7 @@ void Aura::SpellAuraModInvisibility(bool apply)
 		if(m_target->IsPlayer())
 		{
 			if(GetSpellId() == 32612)
-				TO< Player* >(m_target)->RemoveFlag(PLAYER_FIELD_BYTES2, 0x4000);
+				TO< Player* >(m_target)->RemoveFlag(PLAYER_FIELD_BYTES, 0x4000);
 		}
 	}
 
@@ -4911,7 +4911,7 @@ void Aura::SpellAuraFeignDeath(bool apply)
 
 			p_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
 			p_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FEIGN_DEATH);
-			p_target->SetFlag(UNIT_DYNAMIC_FLAGS, U_DYN_FLAG_DEAD);
+			p_target->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, U_DYN_FLAG_DEAD);
 
 			//now get rid of mobs agro. pTarget->CombatStatus.AttackersForgetHate() - this works only for already attacking mobs
 			for(std::set<Object*>::iterator itr = p_target->GetInRangeSetBegin(); itr != p_target->GetInRangeSetEnd(); itr++)
@@ -4968,7 +4968,7 @@ void Aura::SpellAuraFeignDeath(bool apply)
 		{
 			p_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
 			p_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FEIGN_DEATH);
-			p_target->RemoveFlag(UNIT_DYNAMIC_FLAGS, U_DYN_FLAG_DEAD);
+			p_target->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, U_DYN_FLAG_DEAD);
 			data.SetOpcode(SMSG_STOP_MIRROR_TIMER);
 			data << uint32(TIMER_FEIGNDEATH);
 			p_target->GetSession()->SendPacket(&data);
@@ -7573,11 +7573,11 @@ void Aura::SpellAuraEmphaty(bool apply)
 		return;
 
 	// Show extra info about beast
-	uint32 dynflags = m_target->GetUInt32Value(UNIT_DYNAMIC_FLAGS);
+	uint32 dynflags = m_target->GetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS);
 	if(apply)
 		dynflags |= U_DYN_FLAG_PLAYER_INFO;
 
-	m_target->BuildFieldUpdatePacket(caster, UNIT_DYNAMIC_FLAGS, dynflags);
+	m_target->BuildFieldUpdatePacket(caster, OBJECT_FIELD_DYNAMIC_FLAGS, dynflags);
 }
 
 void Aura::SpellAuraModOffhandDamagePCT(bool apply)
@@ -8966,17 +8966,17 @@ void Aura::SpellAuraMirrorImage2(bool apply)
 
 			item = p->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_MAINHAND);
 			if(item != NULL)
-				m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, item->GetProto()->ItemId);
+				m_target->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID, item->GetProto()->ItemId);
 
 			item = p->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_OFFHAND);
 			if(item != NULL)
-				m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, item->GetProto()->ItemId);
+				m_target->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 1, item->GetProto()->ItemId);
 		}
 		else
 		{
-			m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, GetCaster()->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID));
-			m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, GetCaster()->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1));
-			m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, GetCaster()->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2));
+			m_target->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID, GetCaster()->GetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID));
+			m_target->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 1, GetCaster()->GetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 1));
+			m_target->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 2, GetCaster()->GetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 2));
 		}
 	}
 }

@@ -363,7 +363,7 @@ void Creature::OnRespawn(MapMgr* m)
 
 	LOG_DETAIL("Respawning " I64FMT "...", GetGUID());
 	SetHealth(GetMaxHealth());
-	SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0); // not tagging shit
+	SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, 0); // not tagging shit
 	if(m_spawn)
 	{
 		SetUInt32Value(UNIT_NPC_FLAGS, proto->NPCFLags);
@@ -374,7 +374,7 @@ void Creature::OnRespawn(MapMgr* m)
 		{
 			m_limbostate = true;
 			setDeathState(ALIVE);   // we are not actually dead, we just appear dead
-			SetUInt32Value(UNIT_DYNAMIC_FLAGS, U_DYN_FLAG_DEAD);
+			SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, U_DYN_FLAG_DEAD);
 		}
 		else if(m_spawn->death_state == CREATURE_STATE_DEAD)
 		{
@@ -1403,7 +1403,7 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	if(spawn->death_state == CREATURE_STATE_APPEAR_DEAD)
 	{
 		m_limbostate = true;
-		SetUInt32Value(UNIT_DYNAMIC_FLAGS, U_DYN_FLAG_DEAD);
+		SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, U_DYN_FLAG_DEAD);
 	}
 	else if(spawn->death_state == CREATURE_STATE_DEAD)
 	{
@@ -1494,8 +1494,8 @@ void Creature::Load(CreatureProto* proto_, float x, float y, float z, float o)
 // m_spawn is invalid here - don't use it!
 // this is loading a CreatureProto, which doesn't have ItemSlotDisplays
 //	SetEquippedItem(MELEE,m_spawn->Item1SlotDisplay);
-//	SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID_1, m_spawn->Item2SlotDisplay);
-//	SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID_2, m_spawn->Item3SlotDisplay);
+//	SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID_1, m_spawn->Item2SlotDisplay);
+//	SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID_2, m_spawn->Item3SlotDisplay);
 
 	SetFaction(proto->Faction);
 	SetBoundingRadius(proto->BoundingRadius);

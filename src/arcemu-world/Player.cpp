@@ -2427,9 +2427,9 @@ void Player::InitVisibleUpdateBits()
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER4);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER5);
 
-	Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID);
-	Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID + 1);
-	Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID + 2);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 1);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 2);
 
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_LEVEL);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_FACTIONTEMPLATE);
@@ -2450,8 +2450,8 @@ void Player::InitVisibleUpdateBits()
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_PET_NAME_TIMESTAMP);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT + 1);
-	Player::m_visibleUpdateMask.SetBit(UNIT_CHANNEL_SPELL);
-	Player::m_visibleUpdateMask.SetBit(UNIT_DYNAMIC_FLAGS);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_SPELL);
+	Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_DYNAMIC_FLAGS);
 	Player::m_visibleUpdateMask.SetBit(UNIT_NPC_FLAGS);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_HOVERHEIGHT);
 
@@ -4875,7 +4875,7 @@ void Player::KillPlayer()
 	StopMirrorTimer(2);
 
 	SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE); // Player death animation, also can be used with DYNAMIC_FLAGS <- huh???
-	SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0x00);
+	SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, 0x00);
 
 	if (getClass() == WARRIOR)   // Rage resets on death
 		SetPower(POWER_TYPE_RAGE, 0);
@@ -4932,7 +4932,7 @@ void Player::CreateCorpse()
 	if (m_bg)
 	{
 		// Remove our lootable flags
-		RemoveFlag(UNIT_DYNAMIC_FLAGS, U_DYN_FLAG_LOOTABLE);
+		RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, U_DYN_FLAG_LOOTABLE);
 		RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
 		loot.gold = 0;
@@ -6018,7 +6018,7 @@ bool Player::CanSee(Object* obj) // * Invisibility & Stealth Detection - Partha 
 
 		if (gObj->invisible) // Invisibility - Detection of GameObjects
 		{
-			uint64 owner = gObj->GetUInt64Value(OBJECT_FIELD_CREATED_BY);
+			uint64 owner = gObj->GetUInt64Value(GO_FIELD_CREATED_BY);
 
 			if (GetGUID() == owner) // the owner of an object can always see it
 				return true;
@@ -8243,7 +8243,7 @@ void Player::RequestDuel(Player* pTarget)
 	pGameObj->CreateFromProto(21680, GetMapId(), x, y, z, GetOrientation());
 
 	//Spawn the Flag
-	pGameObj->SetUInt64Value(OBJECT_FIELD_CREATED_BY, GetGUID());
+	pGameObj->SetUInt64Value(GO_FIELD_CREATED_BY, GetGUID());
 	pGameObj->SetFaction(GetFaction());
 	pGameObj->SetLevel(getLevel());
 

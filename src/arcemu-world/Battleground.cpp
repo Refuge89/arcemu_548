@@ -337,7 +337,7 @@ GameObject* CBattleground::SpawnGameObject(uint32 entry, uint32 MapId , float x,
 
 	go->SetFaction(faction);
 	go->SetScale(scale);
-	go->SetUInt32Value(GAMEOBJECT_FLAGS, flags);
+	go->SetUInt32Value(GO_FIELD_FLAGS, flags);
 	go->SetPosition(x, y, z, o);
 	go->SetInstanceID(m_mapMgr->GetInstanceID());
 
