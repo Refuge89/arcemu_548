@@ -155,6 +155,7 @@ SET(sources
 	Priest.cpp
 	Rogue.cpp
 	Shaman.cpp
+	Monk.cpp
 	Warlock.cpp
 	Warrior.cpp )
 
@@ -220,7 +221,8 @@ SET( headers
 	MapScriptInterface.h
 	Master.h
 	MiscHandler.h
-        MovementHandler.h
+	Monk.h
+    MovementHandler.h
 	NameTables.h
 	NPCHandler.h
 	Object.h
