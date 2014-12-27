@@ -123,33 +123,24 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
 	ByteBuffer bitBuffer;
 	ByteBuffer dataBuffer;
 
+	bitBuffer.WriteBits(0, 21);
+	bitBuffer.WriteBits(result ? result->GetRowCount() : 0, 16);
 
 	if (result)
 	{
-		//_allowedCharsToLogin.clear();
-
 		charCount = uint32(result->GetRowCount());
 		bitBuffer.reserve(24 * charCount / 8);
 		dataBuffer.reserve(charCount * 381);
-
-		bitBuffer.WriteBits(0, 21); // unk uint32 count
-		bitBuffer.WriteBits(charCount, 16);
 
 		do
 		{
 			Player::BuildEnumData(result, &dataBuffer, &bitBuffer);
 
 		} while (result->NextRow());
-		bitBuffer.WriteBit(1); // Sucess
-		bitBuffer.FlushBits();
 	}
-	else
-	{
-		bitBuffer.WriteBits(0, 21);
-		bitBuffer.WriteBits(0, 16);
-		bitBuffer.WriteBit(1); // Success
+		bitBuffer.WriteBit(1);
 		bitBuffer.FlushBits();
-	}
+	
 
 	WorldPacket data(SMSG_CHAR_ENUM, 7 + bitBuffer.size() + dataBuffer.size());
 
