@@ -901,6 +901,9 @@ void WorldSession::LoadPlayerFromDBProc(QueryResultVector & results)
 		case DRUID:
 			plr = new Druid(playerGuid);
 			break;
+		case MONK:
+		    plr = new Monk(playerGuid);
+			break;
 	}
 
 	if(plr == NULL)
