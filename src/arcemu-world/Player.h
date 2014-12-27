@@ -77,33 +77,50 @@ enum PlayerTeams{
 
 enum Classes
 {
-    WARRIOR =     1,
-    PALADIN =     2,
-    HUNTER =      3,
-    ROGUE =       4,
-    PRIEST =      5,
-    DEATHKNIGHT = 6,
-    SHAMAN =      7,
-    MAGE =        8,
-    WARLOCK =     9,
-    DRUID =       11,
+    CLASS_NONE    = 0,
+    WARRIOR       = 1,
+    PALADIN       = 2,
+    HUNTER        = 3,
+    ROGUE         = 4,
+    PRIEST        = 5,
+    DEATHKNIGHT   = 6,
+    SHAMAN        = 7,
+    MAGE          = 8,
+    WARLOCK       = 9,
+    MONK          = 10,
+    DRUID         = 11,
 	MAX_PLAYER_CLASSES
 };
 
 enum Races
 {
-    RACE_HUMAN =    1,
-    RACE_ORC =      2,
-    RACE_DWARF =    3,
-    RACE_NIGHTELF = 4,
-    RACE_UNDEAD =   5,
-    RACE_TAUREN =   6,
-    RACE_GNOME =    7,
-    RACE_TROLL =    8,
-    RACE_GOBLIN =   9,
-    RACE_BLOODELF = 10,
-    RACE_DRAENEI =  11,
-    RACE_WORGEN =   22,
+	RACE_NONE			= 0,
+	RACE_HUMAN			= 1,
+	RACE_ORC			= 2,
+	RACE_DWARF			= 3,
+	RACE_NIGHTELF		= 4,
+	RACE_UNDEAD			= 5,
+	RACE_TAUREN			= 6,
+	RACE_GNOME			= 7,
+	RACE_TROLL			= 8,
+	RACE_GOBLIN			= 9,
+	RACE_BLOODELF		= 10,
+	RACE_DRAENEI		= 11,
+	RACE_FEL_ORC        = 12,
+	RACE_NAGA           = 13,
+	RACE_BROKEN         = 14,
+	RACE_SKELETON       = 15,
+	RACE_VRYKUL         = 16,
+	RACE_TUSKARR        = 17,
+	RACE_FOREST_TROLL   = 18,
+	RACE_TAUNKA         = 19,
+	RACE_NORTHREND_SKELETON = 20,
+	RACE_ICE_TROLL      = 21,
+	RACE_WORGEN			= 22,
+	RACE_GILNEAN        = 23,
+	RACE_PANDAREN_N		= 24,
+	RACE_PANDAREN_A		= 25,
+	RACE_PANDAREN_H		= 26
 };
 
 enum PlayerStatus
@@ -811,6 +828,7 @@ class SERVER_DECL Player : public Unit
 		virtual bool IsWarrior() { return false; }
 		virtual bool IsPaladin() { return false; }
 		virtual bool IsDruid() { return false; }
+		virtual bool IsMonk() { return false; }
 
 		void HandleUpdateFieldChanged(uint32 index)
 		{
