@@ -2539,9 +2539,9 @@ Player* ObjectMgr::CreatePlayer(uint8 _class)
 		case WARLOCK:
 			result = new Warlock(guid);
 			break;
-		//case MONK:
-			//result = new Monk(guid);
-			//break;
+		case MONK:
+			result = new Monk(guid);
+			break;
 		case DRUID:
 			result = new Druid(guid);
 			break;
