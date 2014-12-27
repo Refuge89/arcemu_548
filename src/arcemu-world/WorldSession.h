@@ -378,6 +378,7 @@ class SERVER_DECL WorldSession
 		void HandleCharDeleteOpcode(WorldPacket & recvPacket);
 		uint8 DeleteCharacter(uint32 guid);
 		void HandleCharCreateOpcode(WorldPacket & recvPacket);
+		void HandleRandomizeCharNameOpcode(WorldPacket & recvPacket);
 		void HandlePlayerLoginOpcode(WorldPacket & recvPacket);
 		void HandleRealmSplitOpcode(WorldPacket & recvPacket);
 

@@ -191,7 +191,7 @@ uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
 		if(TO_UNIT(this)->GetTargetGUID())
 			flags |= UPDATEFLAG_HAS_TARGET; // UPDATEFLAG_HAS_ATTACKING_TARGET
 	}
-
+	ByteBuffer buf(500);
 	// build our actual update
 	*data << updatetype;
 

@@ -538,6 +538,10 @@ void WorldSession::InitPacketHandlerTable()
 		&WorldSession::HandleCharCreateOpcode;
 	WorldPacketHandlers[CMSG_CHAR_CREATE].status = STATUS_AUTHED;
 
+	WorldPacketHandlers[CMSG_RANDOMIZE_CHAR_NAME].handler =
+		&WorldSession::HandleRandomizeCharNameOpcode;
+	WorldPacketHandlers[CMSG_RANDOMIZE_CHAR_NAME].status = STATUS_AUTHED;
+
 	WorldPacketHandlers[CMSG_CHAR_DELETE].handler =
 	    &WorldSession::HandleCharDeleteOpcode;
 	WorldPacketHandlers[CMSG_CHAR_DELETE].status = STATUS_AUTHED;

@@ -1938,11 +1938,11 @@ void ObjectMgr::LoadTrainers()
 					ts.pLearnSpell = dbcSpell.LookupEntryForced(LearnSpellID);
 				}
 
-				if(ts.pCastSpell == NULL && ts.pLearnSpell == NULL)
-				{
-					Log.Error("LoadTrainers", "Trainer %u without valid spells (%u/%u).", entry, CastSpellID, LearnSpellID);
-					continue; //omg a bad spell !
-				}
+				//if(ts.pCastSpell == NULL && ts.pLearnSpell == NULL)
+				//{
+					//Log.Error("LoadTrainers", "Trainer %u without valid spells (%u/%u).", entry, CastSpellID, LearnSpellID);
+					//continue; //omg a bad spell !
+				//}
 
 				if(ts.pCastSpell && !ts.pCastRealSpell)
 					continue;
@@ -2513,7 +2513,6 @@ Player* ObjectMgr::CreatePlayer(uint8 _class)
 	switch(_class)
 	{
 		case WARRIOR:
-			LOG_ERROR("WAR");
 			result = new Warrior(guid);
 			break;
 		case PALADIN:
@@ -2536,9 +2535,12 @@ Player* ObjectMgr::CreatePlayer(uint8 _class)
 			break;
 		case MAGE:
 			result = new Mage(guid);
-			break;
+			break;		
 		case WARLOCK:
 			result = new Warlock(guid);
+			break;
+		case MONK:
+			result = new Monk(guid);
 			break;
 		case DRUID:
 			result = new Druid(guid);

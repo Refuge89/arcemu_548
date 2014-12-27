@@ -238,6 +238,7 @@ extern SERVER_DECL SessionLogWriter* Player_Log;
 #include "Mage.h"
 #include "Hunter.h"
 #include "Shaman.h"
+#include "Monk.h"
 
 #include "MovementHandler.h"
 

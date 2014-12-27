@@ -23,7 +23,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 /////                     Opcodes for Client Build:                    //////
-/////                            18414                           //////
+/////                            18414                                 //////
 /////////////////////////////////////////////////////////////////////////////
 
 enum Opcodes
@@ -85,10 +85,11 @@ enum Opcodes
 	CMSG_AUTH_SRP6_PROOF							= 0x0000,
 	CMSG_AUTH_SRP6_RECODE							= 0x0000,
 
-	CMSG_CHAR_CREATE								= 0x0F1D, // 18414
+	CMSG_CHAR_CREATE = 0x0F1D, // 18414
 	CMSG_CHAR_ENUM									= 0x00E0, // 18414
 	CMSG_CHAR_DELETE								= 0x04E2, // 18414
-
+	CMSG_RANDOMIZE_CHAR_NAME                        = 0x0B1C, // 5.4.8 18141
+	SMSG_RANDOMIZE_CHAR_NAME						= 0x169F, // 5.4.8 18141
 	SMSG_AUTH_SRP6_RESPONSE							= 0x0000,
 
 	SMSG_CHAR_CREATE								= 0x1CAA, // 18414

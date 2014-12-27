@@ -378,8 +378,6 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 	sLogonCommHandler.UpdateAccountCount(GetAccountId(), 1);
 }
 
-
-
 void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
 {
 	//CHECK_PACKET_SIZE(recv_data, 8);
@@ -1099,4 +1097,16 @@ void WorldSession::HandleLoadScreenOpcode(WorldPacket & recv_data)
 
 	recv_data >> mapId;
 	recv_data.ReadBit();
+}
+
+void WorldSession::HandleRandomizeCharNameOpcode(WorldPacket & recv_data)
+{
+	uint8 gender, race;
+
+	recv_data >> race;
+	recv_data >> gender;	
+
+	WorldPacket data(SMSG_RANDOMIZE_CHAR_NAME, 10);
+	data.WriteBit(0);     //////  This isn't correct
+	SendPacket(&data);    //////  but she works! :)
 }

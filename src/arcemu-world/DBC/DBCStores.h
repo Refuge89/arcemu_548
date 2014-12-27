@@ -22,6 +22,8 @@
 
 #pragma pack(push,1)
 
+
+
 struct WorldSafeLocsEntry
 {
 	uint32	ID;
@@ -2050,29 +2052,64 @@ struct CreatureSpellDataEntry
 
 struct CharRaceEntry
 {
-    uint32      race_id;                                     // 0
-    uint32      flags;                                       // 1 -- not using this?
-    uint32      FactionID;                                  // 2 faction template id
-    uint32      model_m;                                    // 4
-    uint32      model_f;                                    // 5
-    uint32      team_id;                                     // 7 (7-Alliance 1-Horde)
-    uint32      cinematic_id;                          // 12 id from CinematicSequences.dbc
-    char*		name1;                                         // 14 used for DBC language detection/selection
-    uint32      expansion;                                  // 20 (0 - original race, 1 - tbc addon, ...)
+	uint32 race_id;                                          // 0
+	//uint32 unk0;                                          // 1
+	uint32 FactionID;                                       // 2 facton template id
+	//uin32 unk1;                                           // 3
+	uint32 model_m;                                         // 4
+	uint32 model_f;                                         // 5
+	//uint32 unk2;                                          // 6
+	uint32 team_id;                                          // 7 (42-Neutral 7-Alliance 1-Horde)
+	//uint32 unk3;                                          // 8 (All 7)
+	//uint32 unk4;                                          // 9 (All 15007)
+	//uint32 unk5;                                          // 10 (All 1096)
+	//uint32 unk6;                                          // 11
+	uint32 cinematic_id;                               // 12 id from CinematicSequences.dbc
+	//uint32 m_charType;                                    // 13 (0 alliance, 1 horde, 2 neutral)
+	char* name1;                                             // 14 m_name_lang used for DBC language detection/selection
+	//char* nameFemale;                                     // 15 ""
+	//char* nameNeutralGender;                              // 16 ""
+	//uint32 m_facialHairCustomization[2]                   // 17-18
+	//uint32 m_hairCustomization                            // 19
+	//uint32 m_enemyRace;                                   // 20 m_enemyRace
+	//uint32 m_linkedRace;                                  // 21 (23 for worgens = Gilnean)
+	//uint32 unk7;                                          // 22 (Gilnean 3133)
+	//uint32 unk8;                                          // 23 (Gilnean 3134)
+	//uint32 unk9;                                          // 24 (All 1, Pandaren 2)
+	//uint32 defaultClassForRace                            // 25
+	//uint32 unk10;                                         // 26
+	//uint32 unk11;                                         // 27
+	//float unk12;                                          // 28
+	//uint32 unk13;                                         // 29 unused
+	//float unk14;                                          // 30
+	//float unk15;                                          // 31
+	//uint32 unk16;                                         // 32 unused
+	//float unk17;                                          // 33
+	//uint32 unk18;                                         // 34
+	//uint32 unk19;                                         // 35
 };
 
 struct CharClassEntry
 {
-    uint32 class_id;
-    uint32 power_type;
-    char* name;
-	// not using these (taken from trinitycore):
-	uint32  spellfamily; 
-	uint32  cinematic_id;                                   // 9        m_cinematicSequenceID
-    uint32  expansion;                                      // 10       m_required_expansion
-    uint32 APPerStrenth;                                    // 11       Attack Power bonus per point of strength
-    uint32 APPerAgility;                                    // 12       Attack Power bonus per point of agility
-    uint32 RAPPerAgility;                                   // 13       Ranged Attack Power bonus per point of agility
+	uint32  class_id;                                        // 0
+	uint32  power_type;                                      // 1        m_DisplayPower
+	// 2        m_petNameToken
+	char* name;                                             // 3        m_name_lang
+	//char*       nameFemale;                               // 4        m_name_female_lang
+	//char*       nameNeutralGender;                        // 5        m_name_male_lang
+	//char*       capitalizedName                           // 6,       m_filename
+	uint32  spellfamily;                                    // 7        m_spellClassSet
+	//uint32 flags2;                                        // 8        m_flags (0x08 HasRelicSlot)
+	uint32 cinematic_id;                               // 9        m_cinematicSequenceID
+	uint32 APPerStrenth;                                    // 10       Attack Power bonus per point of strength
+	uint32 APPerAgility;                                    // 11       Attack Power bonus per point of agility
+	uint32 RAPPerAgility;                                   // 12       Ranged Attack Power bonus per point of agility
+	//uint32 unk1                                           // 13       Pandaria
+	//uint32 unk1                                           // 14       Pandaria
+	//uint32 unk1                                           // 15       Pandaria
+	//uint32 unk1                                           // 16       Pandaria
+	//uint32 unk1                                           // 17       Pandaria
+
 };
 
 struct CreatureFamilyEntry
@@ -2295,6 +2332,14 @@ struct WMOAreaTableEntry
 	int32 groupId; // 3
 	uint32 flags; // 9
 	uint32 areaId; // 10  ref -> AreaTableEntry
+};
+
+struct NameGenEntry
+{
+	//uint32 id;
+	char*  name;
+	uint32 race;
+	uint32 gender;
 };
 
 
@@ -2751,6 +2796,7 @@ extern SERVER_DECL DBCStorage<GtBarberShopCostBaseEntry>	dbcBarberShopCostStore;
 extern SERVER_DECL DBCStorage<GemPropertyEntry>				dbcGemProperty;
 extern SERVER_DECL DBCStorage<ItemSetEntry>					dbcItemSet;
 extern SERVER_DECL DBCStorage<Lock>							dbcLock;
+extern SERVER_DECL DBCStorage<NameGenEntry>                 sNameGenStore;
 
 extern SERVER_DECL DBCStorage<SpellEntry>					dbcSpell;
 extern SERVER_DECL DBCStorage<SpellDuration>				dbcSpellDuration;

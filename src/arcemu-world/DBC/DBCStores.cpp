@@ -59,6 +59,7 @@ SERVER_DECL DBCStorage<GtBarberShopCostBaseEntry>	dbcBarberShopCostStore;
 SERVER_DECL DBCStorage<GemPropertyEntry>			dbcGemProperty;
 SERVER_DECL DBCStorage<ItemSetEntry>				dbcItemSet;
 SERVER_DECL DBCStorage<Lock>						dbcLock;
+SERVER_DECL DBCStorage<NameGenEntry>                sNameGenStore;
 
 SERVER_DECL DBCStorage<SpellRuneCostEntry>			dbcSpellRuneCostEntry;
 SERVER_DECL DBCStorage<SpellRadius>					dbcSpellRadius;
@@ -357,6 +358,8 @@ bool LoadDBCs()
 
 	LOAD_DBC("DBC/SummonProperties.dbc", summonpropertiesformat, true, dbcSummonProperties, false);
 
+	LOAD_DBC("DBC/NameGen.dbc", NameGenfmt, true, sNameGenStore, false);
+
 	return true;
 }
 
@@ -452,3 +455,4 @@ uint32 SpellEntry::GetDispelType()
 	}
 	return 0;
 }
+
