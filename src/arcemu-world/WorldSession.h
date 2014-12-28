@@ -59,57 +59,47 @@ struct TrainerSpell;
 #define NOTIFICATION_MESSAGE_NO_PERMISSION "You do not have permission to perform that function."
 //#define CHECK_PACKET_SIZE(x, y) if(y > 0 && x.size() < y) { _socket->Disconnect(); return; }
 
-// MovementFlags Contribution by Tenshi
-// toDo: add new ones from 4.3.4 15595
+//!!! TODO: cleanup
 enum MovementFlags
 {
     // Byte 1 (Resets on Movement Key Press)
-    MOVEFLAG_MOVE_STOP                  = 0x00000000,			// 15595
-    MOVEFLAG_MOVE_FORWARD				= 0x00000001,			// 15595
-    MOVEFLAG_MOVE_BACKWARD				= 0x00000002,			// 15595
-    MOVEFLAG_STRAFE_LEFT				= 0x00000004,			// 15595
-    MOVEFLAG_STRAFE_RIGHT				= 0x00000008,			// 15595
-    MOVEFLAG_TURN_LEFT					= 0x00000010,			// 15595
-    MOVEFLAG_TURN_RIGHT					= 0x00000020,			// 15595
-    MOVEFLAG_PITCH_DOWN					= 0x00000080,			// 15595
-    MOVEFLAG_PITCH_UP					= 0x00000040,			// 15595
+    MOVEFLAG_MOVE_STOP                  = 0x00000000,			// 18414
+    MOVEFLAG_MOVE_FORWARD				= 0x00000001,			// 18414
+    MOVEFLAG_MOVE_BACKWARD				= 0x00000002,			// 18414
+    MOVEFLAG_STRAFE_LEFT				= 0x00000004,			// 18414
+    MOVEFLAG_STRAFE_RIGHT				= 0x00000008,			// 18414
+    MOVEFLAG_TURN_LEFT					= 0x00000010,			// 18414
+    MOVEFLAG_TURN_RIGHT					= 0x00000020,			// 18414
+    MOVEFLAG_PITCH_UP					= 0x00000040,			// 18414
+	MOVEFLAG_PITCH_DOWN                 = 0x00000080,           // 18414
 
-	// 4.3.4 15595
     // Byte 2 (Resets on Situation Change)
-    MOVEFLAG_WALK						= 0x00000100,		// 15595
-    MOVEFLAG_TRANSPORT					= 0x00000200,       // 15595
-    MOVEFLAG_NO_COLLISION				= 0x20000000,       // 15595
-    MOVEFLAG_ROOTED 					= 0x00000400,		// 15595
-	// not here in 15595?
-    //MOVEFLAG_REDIRECTED 				= 0x00001000,		// 15595 - Unconfirmed, should be MOVEFLAG_JUMP // is this here in 15595
-    MOVEFLAG_FALLING					= 0x00000800,       // 15595
-    MOVEFLAG_FALLING_FAR				= 0x00001000,		// 15595
-    MOVEFLAG_FREE_FALLING				= 0x08000000,		// 15595 not sure - passive rogue spell "free fall"?
+    MOVEFLAG_WALK						= 0x00000100,		// 18414
+	MOVEFLAG_DISABLE_GRAVITY            = 0x00000200,       // 18414
+	MOVEFLAG_ROOTED                     = 0x00000400,       // 18414
+	MOVEFLAG_FALLING					= 0x00000800,       // 18414
+	MOVEFLAG_FALLING_FAR				= 0x00001000,		// 18414
+	MOVEFLAG_TB_PENDING_STOP			= 0x00002000,		// 18414 - (MOVEFLAG_PENDING_STOP)
+	MOVEFLAG_TB_PENDING_UNSTRAFE		= 0x00004000,		// 18414 - (MOVEFLAG_PENDING_UNSTRAFE) (STRAFE_STOP)
+	MOVEFLAG_TB_PENDING_FORWARD			= 0x00008000,		// 18414 - (MOVEFLAG_PENDING_FORWARD)
+    MOVEFLAG_TB_PENDING_BACKWARD		= 0x00010000,		// 18414 - (MOVEFLAG_PENDING_BACKWARD)
+	MOVEFLAG_TB_PENDING_STRAFE_LEFT     = 0x00020000,       // 18414 - (MOVEFLAG_PENDING_STRAFE_LEFT) // not implemented
+	MOVEFLAG_TB_PENDING_STRAFE_RIGHT    = 0x00040000,       // 18414 - (MOVEFLAG_PENDING_STRAFE_RIGHT) // not implemented
+	MOVEFLAG_TB_PENDING_ROOT            = 0x00080000,       // 18414 - (MOVEFLAG_PENDING_ROOT) // not implemented
+	MOVEFLAG_SWIMMING                   = 0x00100000,       // 18414
+	MOVEFLAG_ASCENDING                  = 0x00200000,       // 18414 // not implemented
+	MOVEFLAG_DESCENDING                 = 0x00400000,       // 18414 // not implemented
+	MOVEFLAG_CAN_FLY                    = 0x00800000,       // 18414
+	MOVEFLAG_AIR_SWIMMING				= 0x01000000,	    // 18414 (MOVEFLAG_FLYING)
+	MOVEFLAG_SPLINE_ELEVATION           = 0x02000000,       // 18414
+	MOVEFLAG_WATER_WALK					= 0x04000000,       // 18414
+	MOVEFLAG_FEATHER_FALL				= 0x08000000,       // 18414 (TrinityCore: MOVEMENTFLAG_FALLING_SLOW)
+	MOVEFLAG_AIR_SUSPENSION             = 0x10000000,       // 18414 (TrinityCore: MOVEFLAG_HOVER (?))
+	MOVEFLAG_NO_COLLISION               = 0x20000000,       // 18414
 
-	// 4.3.4 15595
-    // Byte 3 (Set by server. TB = Third Byte. Completely unconfirmed.)
-    MOVEFLAG_TB_PENDING_STOP			= 0x00002000,		// 15595 - (MOVEFLAG_PENDING_STOP)
-    MOVEFLAG_TB_PENDING_UNSTRAFE		= 0x00004000,		// 15595 - (MOVEFLAG_PENDING_UNSTRAFE) (_STRAFESTOP)
-    //MOVEFLAG_TB_PENDING_FALL			= 0x40000,		// (MOVEFLAG_PENDING_FALL) // not here 15595?
-    MOVEFLAG_TB_PENDING_FORWARD			= 0x00008000,		// 15595 - (MOVEFLAG_PENDING_FORWARD)
-    MOVEFLAG_TB_PENDING_BACKWARD		= 0x00010000,		// 15595 - (MOVEFLAG_PENDING_BACKWARD)
+    MOVEFLAG_LOCAL						= 0x80000000,	    // 18414 (What is this?)
 
-    MOVEFLAG_SWIMMING          		    = 0x00100000,		// 15595
-    //MOVEFLAG_FLYING_PITCH_UP	        = 0x00000040,		// 15595 - (MOVEFLAG_PENDING_STR_RGHT) // we already have it
-    MOVEFLAG_CAN_FLY					= 0x00800000,		// 15595 - gets called when landing (MOVEFLAG_MOVED)
-
-	// 4.3.4 15595
-    // Byte 4 (Script Based Flags. Never reset, only turned on or off.)
-    MOVEFLAG_AIR_SUSPENSION	   	 		= 0x1000000,	// confirmed allow body air suspension(good name? lol). wtf flag is this in 15595?
-    MOVEFLAG_AIR_SWIMMING				= 0x01000000,	// MOVEFLAG_AIR_SWIMMING == MOVEFLAG_FLYING (15595)
-    MOVEFLAG_SPLINE_ELEVATION		    = 0x02000000,	// Old MOVEFLAG_SPLINE_MOVER (15595)
-    //MOVEFLAG_SPLINE_ENABLED		    = 0x8000000,    // Gone in 4.3.4 15595
-    MOVEFLAG_WATER_WALK					= 0x04000000,   // 15595
-    MOVEFLAG_FEATHER_FALL				= 0x08000000,	// 15595 (MOVEFLAG_SAFE_FALL) (trinitycore: _FALLING_SLOW)
-    MOVEFLAG_LEVITATE					= 0x10000000,   // 15595 NOT SURE
-    MOVEFLAG_LOCAL						= 0x20000000,	// 15595 NOT SURE
-
-	// not 15595
+	//!!! todo update me
     // Masks
     MOVEFLAG_MOVING_MASK				= 0x03,
     MOVEFLAG_STRAFING_MASK				= 0x0C,
@@ -148,7 +138,7 @@ struct OpcodeHandler
 	void (WorldSession::*handler)(WorldPacket & recvPacket);
 };
 
-// 15595
+// 18414
 enum ObjectUpdateFlags
 {
     UPDATEFLAG_NONE                  = 0x0000,
@@ -160,7 +150,7 @@ enum ObjectUpdateFlags
     UPDATEFLAG_LIVING                = 0x0020,
     UPDATEFLAG_HAS_POSITION          = 0x0040,
     UPDATEFLAG_VEHICLE               = 0x0080,
-    UPDATEFLAG_POSITION              = 0x0100,           // UPDATEFLAG_HAS_STATIONARY_POSITION (used in Object.cpp for transport data)
+    UPDATEFLAG_POSITION              = 0x0100,
     UPDATEFLAG_ROTATION              = 0x0200,
     UPDATEFLAG_UNK3                  = 0x0400,
     UPDATEFLAG_HAS_ANIMKITS          = 0x0800,
@@ -378,7 +368,6 @@ class SERVER_DECL WorldSession
 		void HandleCharDeleteOpcode(WorldPacket & recvPacket);
 		uint8 DeleteCharacter(uint32 guid);
 		void HandleCharCreateOpcode(WorldPacket & recvPacket);
-		void HandleRandomizeCharNameOpcode(WorldPacket & recvPacket);
 		void HandlePlayerLoginOpcode(WorldPacket & recvPacket);
 		void HandleRealmSplitOpcode(WorldPacket & recvPacket);
 
