@@ -382,12 +382,14 @@ class SERVER_DECL WorldSession
 		void HandleRandomizeCharNameOpcode(WorldPacket & recvPacket);
 		void HandlePlayerLoginOpcode(WorldPacket & recvPacket);
 		void HandleObjectUpdateFailedOpcode(WorldPacket & recvPacket);
+		void HandleRealmNameQueryOpcode(WorldPacket& recvPacket);
 		
 		void HandleRealmSplitOpcode(WorldPacket & recvPacket);
 
 		/// Authentification and misc opcodes (MiscHandler.cpp):
 		void HandlePingOpcode(WorldPacket & recvPacket);
 		void SendNameQueryOpcode(ObjectGuid guid);
+		void SendRealmNameQueryOpcode(uint32 realmId);
 		void HandleAuthSessionOpcode(WorldPacket & recvPacket);
 		void HandleRepopRequestOpcode(WorldPacket & recvPacket);
 		void HandleAutostoreLootItemOpcode(WorldPacket & recvPacket);

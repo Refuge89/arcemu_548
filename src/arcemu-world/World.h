@@ -776,8 +776,6 @@ class SERVER_DECL World : public Singleton<World>, public EventableObject
 		}
 
 };
-
-extern uint32 realmID;
 #define sWorld World::getSingleton()
 
 #endif

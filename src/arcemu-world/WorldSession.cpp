@@ -557,6 +557,10 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[CMSG_OBJECT_UPDATE_FAILED].handler =
 		&WorldSession::HandleObjectUpdateFailedOpcode;
 	WorldPacketHandlers[CMSG_OBJECT_UPDATE_FAILED].status = STATUS_AUTHED;
+
+	WorldPacketHandlers[CMSG_REALM_NAME_QUERY].handler =
+		&WorldSession::HandleRealmNameQueryOpcode;
+	WorldPacketHandlers[CMSG_REALM_NAME_QUERY].status = STATUS_AUTHED;
 	
 	WorldPacketHandlers[CMSG_REALM_SPLIT].handler =
 	    &WorldSession::HandleRealmSplitOpcode;
@@ -1729,10 +1733,40 @@ void WorldSession::SendMOTD()
 
 	WorldPacket data(SMSG_MOTD, 100);
 
-	data << uint32(0); // 0 here?
-	data << sWorld.GetMotd();
+	data.WriteBits(0, 4);
+
+	uint32 linecount = 0;
+	std::string str_motd = "Welcome to World Of Warcraft patch 5.4.8";
+	std::string::size_type pos, nextpos;
+	ByteBuffer stringBuffer;
+
+	pos = 0;
+	while ((nextpos = str_motd.find('@', pos)) != std::string::npos)
+	{
+		if (nextpos != pos)
+		{
+			std::string string = str_motd.substr(pos, nextpos - pos);
+			data.WriteBits(strlen(string.c_str()), 7);
+			stringBuffer.WriteString(string);
+			++linecount;
+		}
+		pos = nextpos + 1;
+	}
+
+	if (pos<str_motd.length())
+	{
+		std::string string = str_motd.substr(pos);
+		data.WriteBits(strlen(string.c_str()), 7);
+		stringBuffer.WriteString(string);
+		++linecount;
+	}
+
+	data.PutBits(0, linecount, 4);
+	data.FlushBits();
+	data.append(stringBuffer);
 
 	SendPacket(&data);
+	LOG_DEBUG("WORLD: Sent motd (SMSG_MOTD)");
 }
 
 void WorldSession::HandleEquipmentSetUse(WorldPacket & data)

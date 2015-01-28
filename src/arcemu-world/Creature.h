@@ -95,8 +95,10 @@ struct CreatureInfo
 	char* SubName;
 	char* info_str;
 	uint32 Flags1;
+	uint32 Flags2;
 	uint32 Type;
 	uint32 Family;
+	uint32 expansion;
 	uint32 Rank;
 	uint32 killcredit[2];
 	uint32 Male_DisplayID;
@@ -108,6 +110,8 @@ struct CreatureInfo
 	uint8  Leader;
 	uint32 QuestItems[6];
 	uint32 waypointid;
+	bool   RacialLeader;
+	uint32 MovementType;
 
 	std::string lowercase_name;
 	NpcMonsterSay* MonsterSay[NUM_MONSTER_SAY_EVENTS];

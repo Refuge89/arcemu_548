@@ -896,8 +896,6 @@ void WorldSession::FullLogin(Player* plr)
 
 	sWorld.incrementPlayerCount(plr->GetTeam());
 
-	//printf("you should be logged in now");
-
 	if (plr->m_FirstLogin)
 	{
 		uint32 introid = plr->info->introid;

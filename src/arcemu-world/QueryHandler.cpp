@@ -93,7 +93,7 @@ void WorldSession::SendNameQueryOpcode(ObjectGuid guid)
 
 	if (pn)
 	{
-		data << uint32(0); // realmIdSecond
+		data << uint32(1); // realmIdSecond
 		data << uint32(1); // AccID
 		data << uint8(pn->cl);
 		data << uint8(pn->race);
@@ -136,7 +136,7 @@ void WorldSession::SendNameQueryOpcode(ObjectGuid guid)
 
 		data.WriteByteSeq(guid3[6]);
 		data.WriteByteSeq(guid3[0]);
-		data.WriteString((pn->name));
+		data.WriteString(pn->name);
 		data.WriteByteSeq(guid2[5]);
 		data.WriteByteSeq(guid2[2]);
 		data.WriteByteSeq(guid3[3]);
@@ -174,84 +174,70 @@ void WorldSession::HandleQueryTimeOpcode(WorldPacket & recv_data)
 //////////////////////////////////////////////////////////////
 void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 {
-	CHECK_PACKET_SIZE(recv_data, 12);
-	//sStackWorldPacket( data, SMSG_CREATURE_QUERY_RESPONSE, sizeof(CreatureInfo) + 250*4 );
-	WorldPacket data (SMSG_CREATURE_QUERY_RESPONSE, sizeof(CreatureInfo) + 250*4);
 	uint32 entry;
-	uint64 guid;
-	CreatureInfo *ci;
-
 	recv_data >> entry;
-	recv_data >> guid;
 
-	if(entry == 300000)
+	WorldPacket data(SMSG_CREATURE_QUERY_RESPONSE, 500);
+
+	CreatureInfo *ci = CreatureNameStorage.LookupEntry(entry);
+	data << uint32(entry);
+	data.WriteBit(ci != 0);                                    // Has data
+
+	if (ci)
 	{
-		data << (uint32)entry;
-		data << "WayPoint";
-		data << uint8(0) << uint8(0) << uint8(0);
-		data << "Level is WayPoint ID";
-		for(uint32 i = 0; i < 8;i++)
+
+		//LOG_DEBUG("WORLD: CMSG_CREATURE_QUERY '%s' - Entry: %u.", ci->Name.c_str(), entry);
+
+		data.WriteBits(strlen(ci->SubName) ? strlen(ci->SubName) + 1 : 0, 11);
+		data.WriteBits(6, 22);        // Quest items
+		data.WriteBits(0, 11);
+
+		for (int i = 0; i < 8; i++)
 		{
-			data << uint32(0);
+			if (i == 0)
+				data.WriteBits(strlen(ci->Name) + 1, 11);
+			else
+				data.WriteBits(0, 11);                       // Name2, ..., name8
 		}
-		data << uint8(0);  
+
+		data.WriteBit(ci->Leader);
+		data.WriteBits(strlen(ci->info_str), 6);
+		data.FlushBits();
+
+		data << uint32(ci->killcredit[0]);                  // New in 3.1, kill credit
+		data << uint32(ci->Female_DisplayID2);                       // Modelid4
+		data << uint32(ci->Female_DisplayID);                       // Modelid2
+		data << uint32(ci->expansion);                      // Expansion Required
+		data << uint32(ci->Type);                           // CreatureType.dbc
+		data << float(ci->unkfloat1);                       // Hp modifier
+		data << uint32(ci->Flags1);                     // Flags
+		data << uint32(ci->Flags2);                    // Flags2
+		data << uint32(ci->Rank);                           // Creature Rank (elite, boss, etc)
+		data << uint32(ci->waypointid);                     // CreatureMovementInfo.dbc
+		data << ci->Name;
+
+		if (ci->SubName != "")
+			data << ci->SubName;                                // Subname
+
+		data << uint32(ci->Male_DisplayID);                       // Modelid1
+		data << uint32(ci->Male_DisplayID2);                       // Modelid3
+
+		if (ci->info_str != "")
+			data << ci->info_str;                           // "Directions" for guard, string for Icons 2.3.0
+
+		for (uint32 i = 0; i < 6; ++i)
+			data << uint32(ci->QuestItems[i]);              // ItemId[6], quest drop
+
+		data << uint32(ci->killcredit[1]);                  // New in 3.1, kill credit
+		data << float(ci->unkfloat2);                         // Mana modifier
+		data << uint32(ci->Family);                         // CreatureFamily.dbc
+
+		LOG_DEBUG("WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
 	}
 	else
-	{
-		ci = CreatureNameStorage.LookupEntry(entry);
-		if(ci == NULL)
-			return;
+		LOG_DEBUG("WORLD: CMSG_CREATURE_QUERY - NO CREATURE INFO! (ENTRY: %u)", entry);
 
-		LocalizedCreatureName * lcn = (language>0) ? sLocalizationMgr.GetLocalizedCreatureName(entry, language) : NULL;
-
-		if(lcn == NULL)
-		{
-			sLog.outDetail("WORLD: CMSG_CREATURE_QUERY '%s'", ci->Name);
-			data << (uint32)entry;
-			data << ci->Name;
-			data << uint16(0);
-			data << uint16(0);
-			data << uint16(0);
-			data << uint8(0); //some str, never seen it non empty atm
-			data << ci->SubName;
-		}
-		else
-		{
-			sLog.outDetail("WORLD: CMSG_CREATURE_QUERY '%s' (localized to %s)", ci->Name, lcn->Name);
-			data << (uint32)entry;
-			data << lcn->Name;
-			data << uint16(0);
-			data << uint16(0);
-			data << uint16(0);
-			data << uint8(0); //some str, never seen it non empty atm
-			data << lcn->SubName;
-		}
-		data << ci->info_str; //!!! this is a string in 2.3.0 Example: stormwind guard has : "Direction"
-		data << ci->Flags1;  
-		data << uint32(0);
-		data << ci->Type;
-		data << ci->Family;
-		data << ci->Rank;
-		data << ci->killcredit[0];
-		data << ci->killcredit[1];
-		data << ci->Male_DisplayID;
-		data << ci->Female_DisplayID;
-		data << ci->Male_DisplayID2;
-		data << ci->Female_DisplayID2;
-		data << ci->unkfloat1;
-		data << ci->unkfloat2;
-		data << ci->Leader;
-		data << ci->QuestItems[0];
-		data << ci->QuestItems[1];
-		data << ci->QuestItems[2];
-		data << ci->QuestItems[3];
-		data << ci->QuestItems[4];
-		data << ci->QuestItems[5];
-		data << ci->waypointid;
-		data << uint32(0);
-	}
-
-	SendPacket( &data );
+	SendPacket(&data);
 }
 
 //////////////////////////////////////////////////////////////
@@ -513,4 +499,46 @@ void WorldSession::HandleAchievmentQueryOpcode(WorldPacket & recv_data)
 #ifdef ENABLE_ACHIEVEMENTS
 	pTarget->GetAchievementMgr().SendAllAchievementData(GetPlayer());
 #endif
+}
+
+void WorldSession::SendRealmNameQueryOpcode(uint32 realmId)
+{
+	bool found = false;
+
+	uint32 realmcount = Config.RealmConfig.GetIntDefault("LogonServer", "RealmCount", 1);
+
+	
+		if (realmcount > 0)
+		{
+			found = true;
+		}
+
+		Realm* realm = new Realm;
+		std::string realmName = Config.RealmConfig.GetStringVA("Name", "SomeRealm", "Realm%u");
+
+		WorldPacket data(SMSG_REALM_NAME_QUERY_RESPONSE, 28);
+		data << uint8(!found);
+		data << uint32(realmId);
+
+		if (found)
+		{
+			data.WriteBits(realmName.length(), 8);
+			data.WriteBit(realmId);
+			data.WriteBits(realmName.length(), 8);
+			data.FlushBits();
+
+			data.WriteString(realmName);
+			data.WriteString(realmName);
+		}
+
+		SendPacket(&data);
+
+	
+}
+
+void WorldSession::HandleRealmNameQueryOpcode(WorldPacket& recvPacket)
+{
+	uint32 realmId;
+	recvPacket >> realmId;
+	SendRealmNameQueryOpcode(realmId);
 }
