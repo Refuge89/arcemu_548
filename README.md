@@ -1,1 +1,4 @@
-World of Warcraft: MoP emulator based on ArcEmu, which currently supports patch 5.4.8, build 18414.
+arccata
+======
+
+World of Warcraft: Cataclysm emulator based on ArcEmu, which currently supports patch 4.3.4, build 15595.

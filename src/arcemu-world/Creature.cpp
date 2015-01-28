@@ -939,7 +939,7 @@ void Creature::CalcStat(uint32 type)
 			{
 				//Health
 				uint32 hp = GetBaseHealth();
-				uint32 stat_bonus = GetUInt32Value(UNIT_FIELD_POSSTAT2) - GetUInt32Value(UNIT_FIELD_NEGSTAT2);
+				uint32 stat_bonus = GetUInt32Value(UNIT_FIELD_POSSTAT0 + 2) - GetUInt32Value(UNIT_FIELD_NEGSTAT0 + 2);
 				if(static_cast<int32>(stat_bonus) < 0) stat_bonus = 0;
 
 				uint32 bonus = stat_bonus * 10 + m_healthfromspell;
@@ -956,7 +956,7 @@ void Creature::CalcStat(uint32 type)
 				if(GetPowerType() == POWER_TYPE_MANA)
 				{
 					uint32 mana = GetBaseMana();
-					uint32 stat_bonus = (GetUInt32Value(UNIT_FIELD_POSSTAT3) - GetUInt32Value(UNIT_FIELD_NEGSTAT3));
+					uint32 stat_bonus = (GetUInt32Value(UNIT_FIELD_POSSTAT0 + 3) - GetUInt32Value(UNIT_FIELD_NEGSTAT0 + 3));
 					if(static_cast<int32>(stat_bonus) < 0) stat_bonus = 0;
 
 					uint32 bonus = stat_bonus * 15;
@@ -1494,8 +1494,8 @@ void Creature::Load(CreatureProto* proto_, float x, float y, float z, float o)
 // m_spawn is invalid here - don't use it!
 // this is loading a CreatureProto, which doesn't have ItemSlotDisplays
 //	SetEquippedItem(MELEE,m_spawn->Item1SlotDisplay);
-//	SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID_1, m_spawn->Item2SlotDisplay);
-//	SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID_2, m_spawn->Item3SlotDisplay);
+//	SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID_1, m_spawn->Item2SlotDisplay);
+//	SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID_2, m_spawn->Item3SlotDisplay);
 
 	SetFaction(proto->Faction);
 	SetBoundingRadius(proto->BoundingRadius);

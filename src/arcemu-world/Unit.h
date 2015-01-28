@@ -1746,13 +1746,13 @@ class SERVER_DECL Unit : public Object
 		uint64 GetTargetGUID() { return GetUInt64Value(UNIT_FIELD_TARGET); }
 
 		void SetChannelSpellTargetGUID(uint64 GUID) { SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, GUID); }
-		void SetChannelSpellId(uint32 SpellId) { SetUInt32Value(UNIT_FIELD_CHANNEL_SPELL, SpellId); }
+		void SetChannelSpellId(uint32 SpellId) { SetUInt32Value(UNIT_CHANNEL_SPELL, SpellId); }
 
 		uint64 GetChannelSpellTargetGUID() { return GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT); }
-		uint32 GetChannelSpellId() { return GetUInt32Value(UNIT_FIELD_CHANNEL_SPELL); }
+		uint32 GetChannelSpellId() { return GetUInt32Value(UNIT_CHANNEL_SPELL); }
 
-		void SetEquippedItem(uint8 slot, uint32 id) { SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + slot, id); }
-		uint32 GetEquippedItem(uint8 slot) { return GetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + slot); }
+		void SetEquippedItem(uint8 slot, uint32 id) { SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + slot, id); }
+		uint32 GetEquippedItem(uint8 slot) { return GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + slot); }
 
 		void SetBaseAttackTime(uint8 slot, uint32 time) { SetUInt32Value(UNIT_FIELD_BASEATTACKTIME + slot, time); }
 		uint32 GetBaseAttackTime(uint8 slot) { return GetUInt32Value(UNIT_FIELD_BASEATTACKTIME + slot); }
@@ -1875,27 +1875,27 @@ class SERVER_DECL Unit : public Object
 
 		void ModPower(uint32 index, int32 value)
 		{
-			int32 power = static_cast< int32 >(m_uint32Values[ UNIT_FIELD_POWER1 + index ]);
-			int32 maxpower = static_cast< int32 >(m_uint32Values[ UNIT_FIELD_MAXPOWER1 + index ]);
+			int32 power = static_cast< int32 >(m_uint32Values[ UNIT_FIELD_POWER + 1 + index ]);
+			int32 maxpower = static_cast< int32 >(m_uint32Values[ UNIT_FIELD_MAXPOWER + 1 + index ]);
 
 			if(value <= power)
-				SetUInt32Value(UNIT_FIELD_POWER1 + index, 0);
+				SetUInt32Value(UNIT_FIELD_POWER + 1 + index, 0);
 			else
-				SetUInt32Value(UNIT_FIELD_POWER1 + index, power + value);
+				SetUInt32Value(UNIT_FIELD_POWER + 1 + index, power + value);
 
 			if((value + power) > maxpower)
-				SetUInt32Value(UNIT_FIELD_POWER1 + index, maxpower);
+				SetUInt32Value(UNIT_FIELD_POWER + 1 + index, maxpower);
 			else
-				SetUInt32Value(UNIT_FIELD_POWER1 + index, power + value);
+				SetUInt32Value(UNIT_FIELD_POWER + 1 + index, power + value);
 		}
 
-		uint32 GetPower(uint32 index) { return GetUInt32Value(UNIT_FIELD_POWER1 + index); }
+		uint32 GetPower(uint32 index) { return GetUInt32Value(UNIT_FIELD_POWER + 1 + index); }
 
-		void SetMaxPower(uint32 index, uint32 value) { SetUInt32Value(UNIT_FIELD_MAXPOWER1 + index, value); }
+		void SetMaxPower(uint32 index, uint32 value) { SetUInt32Value(UNIT_FIELD_MAXPOWER + 1 + index, value); }
 
-		void ModMaxPower(uint32 index, int32 value) { ModUnsigned32Value(UNIT_FIELD_MAXPOWER1 + index, value); }
+		void ModMaxPower(uint32 index, int32 value) { ModUnsigned32Value(UNIT_FIELD_MAXPOWER + 1 + index, value); }
 
-		uint32 GetMaxPower(uint32 index) { return GetUInt32Value(UNIT_FIELD_MAXPOWER1 + index); }
+		uint32 GetMaxPower(uint32 index) { return GetUInt32Value(UNIT_FIELD_MAXPOWER + 1 + index); }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

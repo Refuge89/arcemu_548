@@ -25,27 +25,135 @@
 //////////////////////////////////////////////////////////////
 void WorldSession::HandleNameQueryOpcode(WorldPacket & recv_data)
 {
-	CHECK_PACKET_SIZE(recv_data, 8);
-	uint64 guid;
-	recv_data >> guid;
+	ObjectGuid guid;
 
-	PlayerInfo* pn = objmgr.GetPlayerInfo((uint32)guid);
+	uint8 bit14, bit1C;
+	uint32 unk, unk1;
 
-	if(!pn)
+	guid[4] = recv_data.ReadBit();
+	bit14 = recv_data.ReadBit();
+	guid[6] = recv_data.ReadBit();
+	guid[0] = recv_data.ReadBit();
+	guid[7] = recv_data.ReadBit();
+	guid[1] = recv_data.ReadBit();
+	bit1C = recv_data.ReadBit();
+	guid[5] = recv_data.ReadBit();
+	guid[2] = recv_data.ReadBit();
+	guid[3] = recv_data.ReadBit();
+
+	recv_data.ReadByteSeq(guid[7]);
+	recv_data.ReadByteSeq(guid[5]);
+	recv_data.ReadByteSeq(guid[1]);
+	recv_data.ReadByteSeq(guid[2]);
+	recv_data.ReadByteSeq(guid[6]);
+	recv_data.ReadByteSeq(guid[3]);
+	recv_data.ReadByteSeq(guid[0]);
+	recv_data.ReadByteSeq(guid[4]);
+
+	// virtual and native realm Addresses
+
+	if (bit14)
+		recv_data >> unk;
+
+	if (bit1C)
+		recv_data >> unk1;
+
+	SendNameQueryOpcode(guid);
+}
+
+void WorldSession::SendNameQueryOpcode(ObjectGuid guid)
+{
+	PlayerInfo* pn = objmgr.GetPlayerInfo(guid);
+
+	if (!pn)
+		return;	
+
+	WorldPacket data(SMSG_NAME_QUERY_RESPONSE, 500);
+		
+	ObjectGuid guid2 = 0;
+	ObjectGuid guid3 = guid;
+	
+	data.WriteBit(guid[3]);
+	data.WriteBit(guid[6]);
+	data.WriteBit(guid[7]);
+	data.WriteBit(guid[2]);
+	data.WriteBit(guid[5]);
+	data.WriteBit(guid[4]);
+	data.WriteBit(guid[0]);
+	data.WriteBit(guid[1]);
+
+	data.WriteByteSeq(guid[5]);
+	data.WriteByteSeq(guid[4]);
+	data.WriteByteSeq(guid[7]);
+	data.WriteByteSeq(guid[6]);
+	data.WriteByteSeq(guid[1]);
+	data.WriteByteSeq(guid[2]);
+
+	data << uint8(!pn);
+
+	if (pn)
+	{
+		data << uint32(0); // realmIdSecond
+		data << uint32(1); // AccID
+		data << uint8(pn->cl);
+		data << uint8(pn->race);
+		data << uint8(pn->lastLevel);
+		data << uint8(pn->gender);
+	}
+
+	data.WriteByteSeq(guid[0]);
+	data.WriteByteSeq(guid[3]);
+
+	if (!pn)
+	{
+		SendPacket(&data);
 		return;
+	}
+		data.WriteBit(guid2[2]);
+		data.WriteBit(guid2[7]);
+		data.WriteBit(guid3[7]);
+		data.WriteBit(guid3[2]);
+		data.WriteBit(guid3[0]);
+		data.WriteBit(0);
+		data.WriteBit(guid2[4]);
+		data.WriteBit(guid3[5]);
+		data.WriteBit(guid2[1]);
+		data.WriteBit(guid2[3]);
+		data.WriteBit(guid2[0]);
 
-	LOG_DEBUG("Received CMSG_NAME_QUERY for: %s", pn->name);
+		for (uint8 i = 0; i < 5; ++i)
+			data.WriteBits(0, 7);
 
-	WoWGuid pguid((uint64)pn->guid); //VLack: The usual new style guid handling on 3.1.2
-	WorldPacket data(SMSG_NAME_QUERY_RESPONSE, strlen(pn->name) + 35);
-//	data << pn->guid << uint32(0);	//highguid
-	data << pguid << uint8(0); //VLack: usual, new-style guid with an uint8
-	data << pn->name;
-	data << uint8(0);	   // this is a string showed besides players name (eg. in combat log), a custom title ?
-	data << uint8(pn->race) << uint8(pn->gender) << uint8(pn->cl);
-//	data << uint8(0);			// 2.4.0, why do i get the feeling blizz is adding custom classes or custom titles? (same thing in who list)
-	data << uint8(0); //VLack: tell the server this name is not declined... (3.1 fix?)
-	SendPacket(&data);
+		data.WriteBit(guid3[6]);
+		data.WriteBit(guid3[3]);
+		data.WriteBit(guid2[5]);
+		data.WriteBit(guid3[1]);
+		data.WriteBit(guid3[4]);
+		data.WriteBits(strlen(pn->name), 6);
+		data.WriteBit(guid2[6]);
+
+		data.FlushBits();
+
+		data.WriteByteSeq(guid3[6]);
+		data.WriteByteSeq(guid3[0]);
+		data.WriteString((pn->name));
+		data.WriteByteSeq(guid2[5]);
+		data.WriteByteSeq(guid2[2]);
+		data.WriteByteSeq(guid3[3]);
+		data.WriteByteSeq(guid2[4]);
+		data.WriteByteSeq(guid2[3]);
+		data.WriteByteSeq(guid3[4]);
+		data.WriteByteSeq(guid3[2]);
+		data.WriteByteSeq(guid2[7]);
+
+		data.WriteByteSeq(guid2[6]);
+		data.WriteByteSeq(guid3[7]);
+		data.WriteByteSeq(guid3[1]);
+		data.WriteByteSeq(guid2[1]);
+		data.WriteByteSeq(guid3[5]);
+		data.WriteByteSeq(guid2[0]);
+
+		SendPacket(&data);
 }
 
 //////////////////////////////////////////////////////////////

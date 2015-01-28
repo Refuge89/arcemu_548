@@ -1239,7 +1239,7 @@ class ShadowmoonDeathshaperAI : public MoonScriptCreatureAI
 			AddSpellFunc(&SpellFunc_RaiseDead, Target_RandomCorpse, 12, 1.5, 30);
 			AddSpell(SHADOWMOON_DEATHSHAPER_SHADOW_BOLT, Target_Current, 75, 3, 0, 0, 40);	// Typical caster? Slap me if not...
 
-			_unit->SetUInt32Value(UNIT_FIELD_POWER1, 100000);	// temporary way to set up mana of this unit
+			_unit->SetUInt32Value(UNIT_FIELD_POWER + 1, 100000);	// temporary way to set up mana of this unit
 		}
 
 		void OnCombatStart(Unit* pTarget)

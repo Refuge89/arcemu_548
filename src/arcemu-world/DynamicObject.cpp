@@ -67,7 +67,7 @@ void DynamicObject::Create(Unit* caster, Spell* pSpell, float x, float y, float 
 	SetUInt64Value(DYNAMICOBJECT_CASTER, caster->GetGUID());
 
 	SetEntry(m_spellProto->Id);
-	m_uint32Values[DYNAMICOBJECT_BYTES] = 0x01eeeeee;
+	m_uint32Values[DYNAMICOBJECT_FIELD_TYPE_AND_VISUAL_ID] = 0x01eeeeee;
 	m_uint32Values[DYNAMICOBJECT_SPELLID] = m_spellProto->Id;
 
 	m_floatValues[DYNAMICOBJECT_RADIUS] = radius;

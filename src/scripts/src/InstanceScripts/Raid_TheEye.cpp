@@ -2101,8 +2101,8 @@ class AlarAI : public CreatureAIScript
 			_unit->CastSpell(_unit, spells[6].info, spells[6].instant);
 			_unit->SetUInt64Value(UNIT_FIELD_HEALTH, _unit->GetUInt32Value(UNIT_FIELD_MAXHEALTH));
 			_unit->setDeathState(ALIVE);
-			_unit->RemoveFlag(UNIT_DYNAMIC_FLAGS, U_DYN_FLAG_TAGGED_BY_OTHER);
-			_unit->SetFlag(UNIT_DYNAMIC_FLAGS, U_DYN_FLAG_LOOTABLE);
+			_unit->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, U_DYN_FLAG_TAGGED_BY_OTHER);
+			_unit->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, U_DYN_FLAG_LOOTABLE);
 			// no idea what this tag means, smth loot/party related
 			//_unit->ClearTag();
 			_unit->GetAIInterface()->StopMovement(0); // after respawn monster can move

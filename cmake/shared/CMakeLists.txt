@@ -75,8 +75,8 @@ set( headers
 	Tokenizer.h
 	Util.h
 	WorldPacket.h
-	WoWGuid.h
-	Auth/BigNumber.h
+	WoWGuid.h 
+	Auth/BigNumber.h 
 	Auth/MD5.h
 	Auth/Sha1.h
 	Auth/WowCrypt.h

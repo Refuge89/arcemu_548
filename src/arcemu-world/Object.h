@@ -735,6 +735,8 @@ class SERVER_DECL Object : public EventableObject
 		//! Current map cell row and column
 		uint32 m_mapCell_x, m_mapCell_y;
 
+		
+
 		/* Main Function called by isInFront(); */
 		bool inArc(float Position1X, float Position1Y, float FOV, float Orientation, float Position2X, float Position2Y);
 
@@ -810,6 +812,11 @@ class SERVER_DECL Object : public EventableObject
 		bool GetPoint(float angle, float rad, float & outx, float & outy, float & outz, bool sloppypath = false);
 		bool GetRandomPoint(float rad, float & outx, float & outy, float & outz) { return GetPoint(RandomFloat(float(M_PI * 2)), rad, outx, outy, outz); }
 		bool GetRandomPoint(float rad, LocationVector & out) { return GetRandomPoint(rad, out.x, out.y, out.z); }
+
+		uint16 m_map;
+		uint32 m_blockCount;
+		std::set<uint64> m_outOfRangeGUIDs;
+		ByteBuffer m_data;
 };
 
 

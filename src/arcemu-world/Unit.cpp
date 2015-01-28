@@ -2728,7 +2728,7 @@ void Unit::RegeneratePower(bool isinterrupted)
 				{
 					if(!CombatStatus.IsInCombat())
 					{
-						uint32 cur = GetUInt32Value(UNIT_FIELD_POWER5);
+						uint32 cur = GetUInt32Value(UNIT_FIELD_POWER + 5);
 						SetPower(POWER_TYPE_RUNIC_POWER, cur - 20);
 					}
 				}
@@ -3154,7 +3154,7 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 		// mobs can dodge attacks from behind
 		if(weapon_damage_type != RANGED && pVictim->m_stunned <= 0)
 		{
-			dodge = pVictim->GetUInt32Value(UNIT_FIELD_AGILITY) / 14.5f;
+			dodge = pVictim->GetUInt32Value(UNIT_FIELD_STAT0 + 1) / 14.5f;
 			dodge += pVictim->GetDodgeFromSpell();
 		}
 
@@ -5414,7 +5414,7 @@ uint32 Unit::ManaShieldAbsorb(uint32 dmg)
 
 	uint32 cost = (potential * (100 + effectbonus)) / 50;
 
-	SetUInt32Value(UNIT_FIELD_POWER1, mana - cost);
+	SetUInt32Value(UNIT_FIELD_POWER + 1, mana - cost);
 	m_manashieldamt -= potential;
 	if(!m_manashieldamt)
 		RemoveAura(m_manaShieldId);
@@ -7678,14 +7678,14 @@ void Unit::RemoveReflect(uint32 spellid, bool apply)
 
 void Unit::SetPower(uint32 type, int32 value)
 {
-	uint32 maxpower = GetUInt32Value(UNIT_FIELD_MAXPOWER1 + type);
+	uint32 maxpower = GetUInt32Value(UNIT_FIELD_MAXPOWER + 1 + type);
 
 	if(value < 0)
 		value = 0;
 	else if(value > (int32)maxpower)
 		value = maxpower;
 
-	SetUInt32Value(UNIT_FIELD_POWER1 + type, value);
+	SetUInt32Value(UNIT_FIELD_POWER + 1 + type, value);
 }
 
 // DISABLED - NOT UPDATED

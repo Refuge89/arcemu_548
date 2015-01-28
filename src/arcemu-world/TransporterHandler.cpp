@@ -29,7 +29,7 @@ bool Transporter::CreateAsTransporter(uint32 EntryID, const char* Name, int32 Ti
 		return false;
 
 	// Override these flags to avoid mistakes in proto
-	SetUInt32Value(GO_FIELD_FLAGS, 40);
+	SetUInt32Value(GAMEOBJECT_FLAGS, 40);
 	SetByte(GAMEOBJECT_BYTES_1, 3, 100);
 
 	//Maybe this would be the perfect way, so there would be no extra checks in Object.cpp:

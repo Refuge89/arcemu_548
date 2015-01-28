@@ -511,7 +511,7 @@ void IsleOfConquest::SpawnControlPoint(uint32 Id, uint32 Type)
                 controlpoint[ Id ].banner->SetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_STATE, 1);
                 controlpoint[ Id ].banner->SetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_TYPE_ID, gi->Type);
                 controlpoint[ Id ].banner->SetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_ANIMPROGRESS, 100);
-                controlpoint[ Id ].banner->SetUInt32Value(GAMEOBJECT_DYNAMIC, 1);
+                controlpoint[ Id ].banner->SetUInt32Value(8+8, 1);
                 controlpoint[ Id ].banner->SetUInt32Value(GAMEOBJECT_DISPLAYID, gi->DisplayID);
 
                 switch(Type)

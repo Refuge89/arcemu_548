@@ -59,57 +59,67 @@ struct TrainerSpell;
 #define NOTIFICATION_MESSAGE_NO_PERMISSION "You do not have permission to perform that function."
 //#define CHECK_PACKET_SIZE(x, y) if(y > 0 && x.size() < y) { _socket->Disconnect(); return; }
 
-//!!! TODO: cleanup
+// MovementFlags Contribution by Tenshi
+// toDo: add new ones from 4.3.4 15595
 enum MovementFlags
 {
-    // Byte 1 (Resets on Movement Key Press)
-    MOVEFLAG_MOVE_STOP                  = 0x00000000,			// 18414
-    MOVEFLAG_MOVE_FORWARD				= 0x00000001,			// 18414
-    MOVEFLAG_MOVE_BACKWARD				= 0x00000002,			// 18414
-    MOVEFLAG_STRAFE_LEFT				= 0x00000004,			// 18414
-    MOVEFLAG_STRAFE_RIGHT				= 0x00000008,			// 18414
-    MOVEFLAG_TURN_LEFT					= 0x00000010,			// 18414
-    MOVEFLAG_TURN_RIGHT					= 0x00000020,			// 18414
-    MOVEFLAG_PITCH_UP					= 0x00000040,			// 18414
-	MOVEFLAG_PITCH_DOWN                 = 0x00000080,           // 18414
+	MOVEMENTFLAG_NONE = 0x00000000,
+	MOVEMENTFLAG_FORWARD = 0x00000001,
+	MOVEMENTFLAG_BACKWARD = 0x00000002,
+	MOVEMENTFLAG_STRAFE_LEFT = 0x00000004,
+	MOVEMENTFLAG_STRAFE_RIGHT = 0x00000008,
+	MOVEMENTFLAG_LEFT = 0x00000010,
+	MOVEMENTFLAG_RIGHT = 0x00000020,
+	MOVEMENTFLAG_PITCH_UP = 0x00000040,
+	MOVEMENTFLAG_PITCH_DOWN = 0x00000080,
+	MOVEMENTFLAG_WALKING = 0x00000100,               // Walking
+	MOVEMENTFLAG_DISABLE_GRAVITY = 0x00000200,               // Former MOVEMENTFLAG_LEVITATING. This is used when walking is not possible.
+	MOVEMENTFLAG_ROOT = 0x00000400,               // Must not be set along with MOVEMENTFLAG_MASK_MOVING
+	MOVEMENTFLAG_FALLING = 0x00000800,               // damage dealt on that type of falling
+	MOVEMENTFLAG_FALLING_FAR = 0x00001000,
+	MOVEMENTFLAG_PENDING_STOP = 0x00002000,
+	MOVEMENTFLAG_PENDING_STRAFE_STOP = 0x00004000,
+	MOVEMENTFLAG_PENDING_FORWARD = 0x00008000,
+	MOVEMENTFLAG_PENDING_BACKWARD = 0x00010000,
+	MOVEMENTFLAG_PENDING_STRAFE_LEFT = 0x00020000,
+	MOVEMENTFLAG_PENDING_STRAFE_RIGHT = 0x00040000,
+	MOVEMENTFLAG_PENDING_ROOT = 0x00080000,
+	MOVEMENTFLAG_SWIMMING = 0x00100000,               // appears with fly flag also
+	MOVEMENTFLAG_ASCENDING = 0x00200000,               // press "space" when flying
+	MOVEMENTFLAG_DESCENDING = 0x00400000,
+	MOVEMENTFLAG_CAN_FLY = 0x00800000,               // Appears when unit can fly AND also walk
+	MOVEMENTFLAG_FLYING = 0x01000000,               // unit is actually flying. pretty sure this is only used for players. creatures use disable_gravity
+	MOVEMENTFLAG_SPLINE_ELEVATION = 0x02000000,               // used for flight paths
+	MOVEMENTFLAG_WATERWALKING = 0x04000000,               // prevent unit from falling through water
+	MOVEMENTFLAG_FALLING_SLOW = 0x08000000,               // active rogue safe fall spell (passive)
+	MOVEMENTFLAG_HOVER = 0x10000000,               // hover, cannot jump
+	MOVEMENTFLAG_DISABLE_COLLISION = 0x20000000,
 
-    // Byte 2 (Resets on Situation Change)
-    MOVEFLAG_WALK						= 0x00000100,		// 18414
-	MOVEFLAG_DISABLE_GRAVITY            = 0x00000200,       // 18414
-	MOVEFLAG_ROOTED                     = 0x00000400,       // 18414
-	MOVEFLAG_FALLING					= 0x00000800,       // 18414
-	MOVEFLAG_FALLING_FAR				= 0x00001000,		// 18414
-	MOVEFLAG_TB_PENDING_STOP			= 0x00002000,		// 18414 - (MOVEFLAG_PENDING_STOP)
-	MOVEFLAG_TB_PENDING_UNSTRAFE		= 0x00004000,		// 18414 - (MOVEFLAG_PENDING_UNSTRAFE) (STRAFE_STOP)
-	MOVEFLAG_TB_PENDING_FORWARD			= 0x00008000,		// 18414 - (MOVEFLAG_PENDING_FORWARD)
-    MOVEFLAG_TB_PENDING_BACKWARD		= 0x00010000,		// 18414 - (MOVEFLAG_PENDING_BACKWARD)
-	MOVEFLAG_TB_PENDING_STRAFE_LEFT     = 0x00020000,       // 18414 - (MOVEFLAG_PENDING_STRAFE_LEFT) // not implemented
-	MOVEFLAG_TB_PENDING_STRAFE_RIGHT    = 0x00040000,       // 18414 - (MOVEFLAG_PENDING_STRAFE_RIGHT) // not implemented
-	MOVEFLAG_TB_PENDING_ROOT            = 0x00080000,       // 18414 - (MOVEFLAG_PENDING_ROOT) // not implemented
-	MOVEFLAG_SWIMMING                   = 0x00100000,       // 18414
-	MOVEFLAG_ASCENDING                  = 0x00200000,       // 18414 // not implemented
-	MOVEFLAG_DESCENDING                 = 0x00400000,       // 18414 // not implemented
-	MOVEFLAG_CAN_FLY                    = 0x00800000,       // 18414
-	MOVEFLAG_AIR_SWIMMING				= 0x01000000,	    // 18414 (MOVEFLAG_FLYING)
-	MOVEFLAG_SPLINE_ELEVATION           = 0x02000000,       // 18414
-	MOVEFLAG_WATER_WALK					= 0x04000000,       // 18414
-	MOVEFLAG_FEATHER_FALL				= 0x08000000,       // 18414 (TrinityCore: MOVEMENTFLAG_FALLING_SLOW)
-	MOVEFLAG_AIR_SUSPENSION             = 0x10000000,       // 18414 (TrinityCore: MOVEFLAG_HOVER (?))
-	MOVEFLAG_NO_COLLISION               = 0x20000000,       // 18414
+	/// @todo Check if PITCH_UP and PITCH_DOWN really belong here..
+	MOVEMENTFLAG_MASK_MOVING =
+	MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT |
+	MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING |
+	MOVEMENTFLAG_SPLINE_ELEVATION,
 
-    MOVEFLAG_LOCAL						= 0x80000000,	    // 18414 (What is this?)
+	MOVEMENTFLAG_MASK_TURNING =
+	MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT,
 
-	//!!! todo update me
-    // Masks
-    MOVEFLAG_MOVING_MASK				= 0x03,
-    MOVEFLAG_STRAFING_MASK				= 0x0C,
-    MOVEFLAG_TURNING_MASK				= 0x30,         // MOVEFLAG_TURN_LEFT + MOVEFLAG_TURN_RIGHT
-    MOVEFLAG_FALLING_MASK				= 0x6000,
-    MOVEFLAG_MOTION_MASK				= 0xE00F,		// Forwards, Backwards, Strafing, Falling
-    MOVEFLAG_PENDING_MASK				= 0x7F0000,
-    MOVEFLAG_PENDING_STRAFE_MASK		= 0x600000,
-    MOVEFLAG_PENDING_MOVE_MASK			= 0x180000,
-    MOVEFLAG_FULL_FALLING_MASK			= 0xE000,
+	MOVEMENTFLAG_MASK_MOVING_FLY =
+	MOVEMENTFLAG_FLYING | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING,
+
+	// Movement flags allowed for creature in CreateObject - we need to keep all other enabled serverside
+	// to properly calculate all movement
+	MOVEMENTFLAG_MASK_CREATURE_ALLOWED =
+	MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_ROOT | MOVEMENTFLAG_SWIMMING |
+	MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_FALLING_SLOW | MOVEMENTFLAG_HOVER,
+
+	/// @todo if needed: add more flags to this masks that are exclusive to players
+	MOVEMENTFLAG_MASK_PLAYER_ONLY =
+	MOVEMENTFLAG_FLYING,
+
+	/// Movement flags that have change status opcodes associated for players
+	MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE = MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_ROOT |
+	MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_FALLING_SLOW | MOVEMENTFLAG_HOVER
 };
 
 // updated + added 15595 ones
@@ -138,7 +148,7 @@ struct OpcodeHandler
 	void (WorldSession::*handler)(WorldPacket & recvPacket);
 };
 
-// 18414
+// 15595
 enum ObjectUpdateFlags
 {
     UPDATEFLAG_NONE                  = 0x0000,
@@ -148,9 +158,9 @@ enum ObjectUpdateFlags
     UPDATEFLAG_UNKNOWN               = 0x0008,
     UPDATEFLAG_LOWGUID               = 0x0010,
     UPDATEFLAG_LIVING                = 0x0020,
-    UPDATEFLAG_HAS_POSITION          = 0x0040,
+    UPDATEFLAG_HAS_POSITION          = 0x0040, //UPDATEFLAG_STATIONARY_POSITION
     UPDATEFLAG_VEHICLE               = 0x0080,
-    UPDATEFLAG_POSITION              = 0x0100,
+    UPDATEFLAG_POSITION              = 0x0100, //UPDATEFLAG_GO_TRANSPORT_POSITION
     UPDATEFLAG_ROTATION              = 0x0200,
     UPDATEFLAG_UNK3                  = 0x0400,
     UPDATEFLAG_HAS_ANIMKITS          = 0x0800,
@@ -185,6 +195,7 @@ struct AccountDataEntry
 	char* data;
 	uint32 sz;
 	bool bIsDirty;
+	time_t Time;
 };
 
 typedef struct Cords
@@ -368,11 +379,15 @@ class SERVER_DECL WorldSession
 		void HandleCharDeleteOpcode(WorldPacket & recvPacket);
 		uint8 DeleteCharacter(uint32 guid);
 		void HandleCharCreateOpcode(WorldPacket & recvPacket);
+		void HandleRandomizeCharNameOpcode(WorldPacket & recvPacket);
 		void HandlePlayerLoginOpcode(WorldPacket & recvPacket);
+		void HandleObjectUpdateFailedOpcode(WorldPacket & recvPacket);
+		
 		void HandleRealmSplitOpcode(WorldPacket & recvPacket);
 
 		/// Authentification and misc opcodes (MiscHandler.cpp):
 		void HandlePingOpcode(WorldPacket & recvPacket);
+		void SendNameQueryOpcode(ObjectGuid guid);
 		void HandleAuthSessionOpcode(WorldPacket & recvPacket);
 		void HandleRepopRequestOpcode(WorldPacket & recvPacket);
 		void HandleAutostoreLootItemOpcode(WorldPacket & recvPacket);

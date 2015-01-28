@@ -1138,7 +1138,7 @@ void Spell::SpellEffectApplyAura(uint32 i)  // Apply Aura
 			return;
 		}
 
-		if(g_caster && g_caster->GetUInt32Value(GO_FIELD_CREATED_BY) && g_caster->m_summoner)
+		if(g_caster && g_caster->GetUInt32Value(OBJECT_FIELD_CREATED_BY) && g_caster->m_summoner)
 			pAura = sSpellFactoryMgr.NewAura(GetProto(), Duration, g_caster->m_summoner, unitTarget, m_triggeredSpell, i_caster);
 		else
 			pAura = sSpellFactoryMgr.NewAura(GetProto(), Duration, m_caster, unitTarget, m_triggeredSpell, i_caster);
@@ -1176,9 +1176,9 @@ void Spell::SpellEffectPowerDrain(uint32 i)  // Power Drain
 	if(!unitTarget || !unitTarget->isAlive())
 		return;
 
-	uint32 powerField = UNIT_FIELD_POWER1 + GetProto()->eff[i].EffectMiscValue;
+	uint32 powerField = UNIT_FIELD_POWER + 1 + GetProto()->eff[i].EffectMiscValue;
 	uint32 curPower = unitTarget->GetUInt32Value(powerField);
-	if(powerField == UNIT_FIELD_POWER1 && unitTarget->IsPlayer())
+	if(powerField == UNIT_FIELD_POWER + 1 && unitTarget->IsPlayer())
 	{
 		Player* mPlayer = TO< Player* >(unitTarget);
 		if(mPlayer->IsInFeralForm())
@@ -2579,7 +2579,7 @@ void Spell::SpellEffectOpenLock(uint32 i) // Open Lock
 						if(lock->locktype[j] == 2 && lock->minlockskill[j] && lockskill >= lock->minlockskill[j])
 						{
 							v = lock->minlockskill[j];
-							gameObjTarget->SetUInt32Value(GO_FIELD_FLAGS, 0);
+							gameObjTarget->SetUInt32Value(GAMEOBJECT_FLAGS, 0);
 							gameObjTarget->SetByte(GAMEOBJECT_BYTES_1, 0, 1);
 							//Add Fill GO loot here
 							if(gameObjTarget->loot.items.size() == 0)
@@ -3227,9 +3227,9 @@ void Spell::SpellEffectSummonObject(uint32 i)
 		GameObject* go = u_caster->GetMapMgr()->CreateGameObject(GO_FISHING_BOBBER);
 
 		go->CreateFromProto(GO_FISHING_BOBBER, mapid, posx, posy, posz, orient);
-		go->SetUInt32Value(GO_FIELD_FLAGS, 0);
+		go->SetUInt32Value(GAMEOBJECT_FLAGS, 0);
 		go->SetByte(GAMEOBJECT_BYTES_1, 0, 0);
-		go->SetUInt64Value(GO_FIELD_CREATED_BY, m_caster->GetGUID());
+		go->SetUInt64Value(OBJECT_FIELD_CREATED_BY, m_caster->GetGUID());
 		u_caster->SetChannelSpellTargetGUID(go->GetGUID());
 		go->Phase(PHASE_SET, u_caster->GetPhase());
 
@@ -3267,7 +3267,7 @@ void Spell::SpellEffectSummonObject(uint32 i)
 
 		go->CreateFromProto(entry, mapid, posx, posy, pz, orient);
 		go->SetByte(GAMEOBJECT_BYTES_1, 0, 1);
-		go->SetUInt64Value(GO_FIELD_CREATED_BY, m_caster->GetGUID());
+		go->SetUInt64Value(OBJECT_FIELD_CREATED_BY, m_caster->GetGUID());
 		go->Phase(PHASE_SET, u_caster->GetPhase());
 		go->PushToWorld(m_caster->GetMapMgr());
 		sEventMgr.AddEvent(go, &GameObject::ExpireAndDelete, EVENT_GAMEOBJECT_EXPIRE, GetDuration(), 1, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
@@ -3829,7 +3829,7 @@ void Spell::SpellEffectAddFarsight(uint32 i) // Add Farsight
 	}
 	*/
 	dynObj->SetUInt32Value(OBJECT_FIELD_TYPE, 65);
-	dynObj->SetUInt32Value(DYNAMICOBJECT_BYTES, 0x80000002);
+	dynObj->SetUInt32Value(DYNAMICOBJECT_FIELD_TYPE_AND_VISUAL_ID, 0x80000002);
 	dynObj->SetInstanceID(p_caster->GetInstanceID());
 	p_caster->SetFarsightTarget(dynObj->GetGUID());
 
@@ -4416,7 +4416,7 @@ void Spell::SpellEffectSummonObjectSlot(uint32 i)
 	}
 
 	GoSummon->SetLevel(u_caster->getLevel());
-	GoSummon->SetUInt64Value(GO_FIELD_CREATED_BY, m_caster->GetGUID());
+	GoSummon->SetUInt64Value(OBJECT_FIELD_CREATED_BY, m_caster->GetGUID());
 	GoSummon->Phase(PHASE_SET, u_caster->GetPhase());
 
 	GoSummon->PushToWorld(m_caster->GetMapMgr());

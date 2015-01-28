@@ -170,6 +170,25 @@ class SERVER_DECL ByteBuffer
 			put(pos, (uint8*)&value, sizeof(value));
 		}
 
+		template <typename T> void PutBits(size_t pos, T value, uint32 bitCount)
+		{
+			//if (!bitCount)
+				//throw ByteBufferSourceException((pos + bitCount) / 8, size(), 0);
+
+			//if (pos + bitCount > size() * 8)
+				//throw ByteBufferPositionException(false, (pos + bitCount) / 8, size(), (bitCount - 1) / 8 + 1);
+
+			for (uint32 i = 0; i < bitCount; ++i)
+			{
+				size_t wp = (pos + i) / 8;
+				size_t bit = (pos + i) % 8;
+				if ((value >> (bitCount - i - 1)) & 1)
+					_storage[wp] |= 1 << (7 - bit);
+				else
+					_storage[wp] &= ~(1 << (7 - bit));
+			}
+		}
+
 		// stream like operators for storing data
 		ByteBuffer & operator<<(bool value)
 		{
@@ -440,9 +459,20 @@ class SERVER_DECL ByteBuffer
 			_rpos += len;
 		}
 
+		size_t bitwpos() const { return _wpos * 8 + 8 - _bitpos; }
+
+		size_t bitwpos(size_t newPos)
+		{
+			_wpos = newPos / 8;
+			_bitpos = 8 - (newPos % 8);
+			return _wpos * 8 + 8 - _bitpos;
+		}
+
 		const uint8* contents() const { return &_storage[0]; };
 
 		ARCEMU_INLINE size_t size() const { return _storage.size(); };
+		ARCEMU_INLINE bool empty() const { return _storage.empty(); }
+
 		// one should never use resize probably
 		void resize(size_t newsize)
 		{

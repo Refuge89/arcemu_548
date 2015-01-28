@@ -296,7 +296,7 @@ AddItemResult ItemInterface::m_AddItem(Item* item, int8 ContainerSlot, int16 slo
 	if(slot < EQUIPMENT_SLOT_END && ContainerSlot == INVENTORY_SLOT_NOT_SET)
 	{
 		int VisibleBase = GetOwner()->GetVisibleBase(slot);
-		if(VisibleBase > PLAYER_VISIBLE_ITEM_19_ENTRYID)
+		if(VisibleBase > PLAYER_VISIBLE_ITEM_1_ENTRYID + 19)
 		{
 			LOG_DEBUG("Slot warning: slot: %d", slot);
 		}

@@ -1133,7 +1133,7 @@ void AlteracValley::AVNode::Spawn()
 			m_flag->bannerslot = static_cast<int8>(m_nodeId);
 			m_flag->SetFaction(g_gameObjectFactions[m_state]);
 			m_flag->SetByte(GAMEOBJECT_BYTES_1, 3, 100);
-			m_flag->SetUInt32Value(GAMEOBJECT_DYNAMIC, 1);
+			m_flag->SetUInt32Value(8+8, 1);
 			m_flag->PushToWorld(m_bg->GetMapMgr());
 		}
 		else
@@ -1150,7 +1150,7 @@ void AlteracValley::AVNode::Spawn()
 				m_flag->SetType(static_cast<uint8>(goi->Type));
 				m_flag->SetFaction(g_gameObjectFactions[m_state]);
 				m_flag->SetByte(GAMEOBJECT_BYTES_1, 3, 100);
-				m_flag->SetUInt32Value(GAMEOBJECT_DYNAMIC, 1);
+				m_flag->SetUInt32Value(8+8, 1);
 				m_flag->PushToWorld(m_bg->GetMapMgr());
 			}
 		}
@@ -1397,7 +1397,7 @@ void AlteracValley::AVNode::Capture()
 			if(m_flag != NULL)
 			{
 				m_flag->SetUInt32Value(GAMEOBJECT_FLAGS, 1);
-				m_flag->SetUInt32Value(GAMEOBJECT_DYNAMIC, 0);
+				m_flag->SetUInt32Value(8+8, 0);
 				m_flag->SetByte(GAMEOBJECT_BYTES_1, 0, 1);
 			}
 

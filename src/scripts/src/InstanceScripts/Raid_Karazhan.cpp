@@ -1318,7 +1318,7 @@ class CuratorAI : public CreatureAIScript
 			_unit->PlaySoundToSet(sound);
 			_unit->SendChatMessage(CHAT_MSG_MONSTER_YELL, LANG_UNIVERSAL, text);
 
-			_unit->SetUInt32Value(UNIT_FIELD_POWER1, _unit->GetPower(POWER_TYPE_MANA) - (_unit->GetMaxPower(POWER_TYPE_MANA) / 10));
+			_unit->SetUInt32Value(UNIT_FIELD_POWER + 1, _unit->GetPower(POWER_TYPE_MANA) - (_unit->GetMaxPower(POWER_TYPE_MANA) / 10));
 			float dX = _unit->GetPositionX();
 			float dY = _unit->GetPositionY();
 			Creature* AstralFlare = NULL;
@@ -1575,7 +1575,7 @@ class ShadeofAranAI : public CreatureAIScript
 			_unit->GetAIInterface()->setCurrentAgent(AGENT_NULL);
 			_unit->GetAIInterface()->SetAIState(STATE_IDLE);
 			RemoveAIUpdateEvent();
-			_unit->SetUInt32Value(UNIT_FIELD_POWER1, _unit->GetMaxPower(POWER_TYPE_MANA));
+			_unit->SetUInt32Value(UNIT_FIELD_POWER + 1, _unit->GetMaxPower(POWER_TYPE_MANA));
 			// Door opening
 			GameObject* SDoor = NULL;
 			SDoor = _unit->GetMapMgr()->GetInterface()->GetGameObjectNearestCoords(-11190.012f, -1881.016f, 231.95f, 184517);

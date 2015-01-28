@@ -554,6 +554,10 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandlePlayerLoginOpcode;
 	WorldPacketHandlers[CMSG_PLAYER_LOGIN].status = STATUS_AUTHED;
 
+	WorldPacketHandlers[CMSG_OBJECT_UPDATE_FAILED].handler =
+		&WorldSession::HandleObjectUpdateFailedOpcode;
+	WorldPacketHandlers[CMSG_OBJECT_UPDATE_FAILED].status = STATUS_AUTHED;
+	
 	WorldPacketHandlers[CMSG_REALM_SPLIT].handler =
 	    &WorldSession::HandleRealmSplitOpcode;
 	WorldPacketHandlers[CMSG_REALM_SPLIT].status = STATUS_AUTHED;
@@ -1617,21 +1621,16 @@ void WorldSession::SendRefundInfo(uint64 GUID)
 
 void WorldSession::SendAccountDataTimes(uint32 mask)
 {
-	WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + NUM_ACCOUNT_DATA_TYPES * 4);	// changed in WotLK
+	WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + NUM_ACCOUNT_DATA_TYPES * 4);
 
 	data.WriteBit(1);
-	data.FlushBits();	
+	data.FlushBits();
 
-	for(uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
-		if(mask & (1 << i))
-		{
-			 //data << uint32(GetAccountData(AccountDataType(i))->Time);//
-			// also unix time
-			data << uint32(0);
-		}
+	for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
+		data << uint32(GetAccountData(AccountDataType(i))->Time); // also unix time
 
 	data << uint32(mask);
-	data << uint32(time(NULL));
+	data << uint32(time(NULL)); // Server time
 
 	SendPacket(&data);
 }

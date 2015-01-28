@@ -73,7 +73,7 @@ GameObject::~GameObject()
 		myScript = NULL;
 	}
 
-	uint32 guid = GetUInt32Value(GO_FIELD_CREATED_BY);
+	uint32 guid = GetUInt32Value(OBJECT_FIELD_CREATED_BY);
 	if(guid)
 	{
 		Player* plr = objmgr.GetPlayer(guid);
@@ -234,7 +234,7 @@ void GameObject::Despawn(uint32 delay, uint32 respawntime)
 	if(m_spawn)
 	{
 		SetByte(GAMEOBJECT_BYTES_1, 0, static_cast<uint8>(m_spawn->state));
-		SetUInt32Value(GO_FIELD_FLAGS, m_spawn->flags);
+		SetUInt32Value(GAMEOBJECT_FLAGS, m_spawn->flags);
 	}
 
 	CALL_GO_SCRIPT_EVENT(this, OnDespawn)();
@@ -266,7 +266,7 @@ void GameObject::SaveToDB()
 		m_spawn->entry = GetEntry();
 		m_spawn->facing = GetOrientation();
 		m_spawn->faction = GetFaction();
-		m_spawn->flags = GetUInt32Value(GO_FIELD_FLAGS);
+		m_spawn->flags = GetUInt32Value(GAMEOBJECT_FLAGS);
 		m_spawn->id = objmgr.GenerateGameObjectSpawnID();
 		m_spawn->o1 = GetParentRotation(0);
 		m_spawn->o2 = GetParentRotation(2);
@@ -309,7 +309,7 @@ void GameObject::SaveToDB()
 	   << GetParentRotation(2) << ","
 	   << GetParentRotation(3) << ","
 	   << GetUInt32Value(GAMEOBJECT_BYTES_1) << ","
-	   << GetUInt32Value(GO_FIELD_FLAGS) << ","
+	   << GetUInt32Value(GAMEOBJECT_FLAGS) << ","
 	   << GetFaction() << ","
 	   << GetScale() << ","
 	   << "0,"
@@ -337,7 +337,7 @@ void GameObject::SaveToFile(std::stringstream & name)
 	   << GetParentRotation(2) << ","
 	   << GetParentRotation(3) << ","
 	   << GetByte(GAMEOBJECT_BYTES_1, 0) << ","
-	   << GetUInt32Value(GO_FIELD_FLAGS) << ","
+	   << GetUInt32Value(GAMEOBJECT_FLAGS) << ","
 	   << GetFaction() << ","
 	   << GetScale() << ","
 	   << "0,"
@@ -471,7 +471,7 @@ bool GameObject::Load(GOSpawn* spawn)
 	m_spawn = spawn;
 	m_phase = spawn->phase;
 	//SetRotation(spawn->o);
-	SetUInt32Value(GO_FIELD_FLAGS, spawn->flags);
+	SetUInt32Value(GAMEOBJECT_FLAGS, spawn->flags);
 //	SetLevel(spawn->level);
 	SetByte(GAMEOBJECT_BYTES_1, 0, static_cast<uint8>(spawn->state));
 	if(spawn->faction)
@@ -491,16 +491,16 @@ void GameObject::DeleteFromDB()
 
 void GameObject::EventCloseDoor()
 {
-	// GO_FIELD_FLAGS +1 closedoor animate restore the pointer flag.
+	// gameobject_flags +1 closedoor animate restore the pointer flag.
 	// by cebernic
 	SetByte(GAMEOBJECT_BYTES_1, 0, 1);
-	RemoveFlag(GO_FIELD_FLAGS, 1);
+	RemoveFlag(GAMEOBJECT_FLAGS, 1);
 }
 
 void GameObject::UseFishingNode(Player* player)
 {
 	sEventMgr.RemoveEvents(this);
-	if(!HasFlag(GO_FIELD_FLAGS, 32))     // Clicking on the bobber before something is hooked
+	if(!HasFlag(GAMEOBJECT_FLAGS, 32))     // Clicking on the bobber before something is hooked
 	{
 		player->GetSession()->OutPacket(SMSG_FISH_NOT_HOOKED);
 		EndFishing(player, true);
@@ -603,8 +603,8 @@ void GameObject::FishHooked(Player* player)
 	data << (uint32)(0); // value < 4
 	player->GetSession()->SendPacket(&data);
 	//SetByte(GAMEOBJECT_BYTES_1, 0, 0);
-	//BuildFieldUpdatePacket(player, GO_FIELD_FLAGS, 32);
-	SetUInt32Value(GO_FIELD_FLAGS, 32);
+	//BuildFieldUpdatePacket(player, GAMEOBJECT_FLAGS, 32);
+	SetUInt32Value(GAMEOBJECT_FLAGS, 32);
 }
 
 /////////////
@@ -700,12 +700,12 @@ void GameObject::ExpireAndDelete()
 //! Deactivates selected gameobject ex. stops doors from opening/closing.
 void GameObject::Deactivate()
 {
-	SetUInt32Value(GAMEOBJECT_DYNAMIC, 0);
+	SetUInt32Value(8+8, 0);
 }
 
 void GameObject::Activate()
 {
-	SetUInt32Value(GAMEOBJECT_DYNAMIC, 1);
+	SetUInt32Value(8+8, 1);
 }
 
 void GameObject::CallScriptUpdate()

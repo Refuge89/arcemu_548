@@ -1675,7 +1675,7 @@ uint32 Pet::CanLearnSpell(SpellEntry* sp)
 HappinessState Pet::GetHappinessState()
 {
 	//gets happiness state from happiness points
-	uint32 pts = GetUInt32Value(UNIT_FIELD_POWER5);
+	uint32 pts = GetUInt32Value(UNIT_FIELD_POWER + 5);
 	if(pts < PET_HAPPINESS_UPDATE_VALUE)
 		return UNHAPPY;
 	else if(pts >= PET_HAPPINESS_UPDATE_VALUE << 1)

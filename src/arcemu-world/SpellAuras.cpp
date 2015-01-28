@@ -2718,7 +2718,7 @@ void Aura::SpellAuraModStealth(bool apply)
 
 		m_target->SetFlag(UNIT_FIELD_BYTES_1, 0x020000);
 		if(m_target->IsPlayer())
-			m_target->SetFlag(PLAYER_FIELD_BYTES, 0x2000);
+			//m_target->SetFlag(PLAYER_FIELD_BYTES2, 0x2000); FIX ME!!
 
 		m_target->RemoveAurasByInterruptFlag(AURA_INTERRUPT_ON_STEALTH | AURA_INTERRUPT_ON_INVINCIBLE);
 		m_target->m_stealthLevel += mod->m_amount;
@@ -2801,7 +2801,7 @@ void Aura::SpellAuraModStealth(bool apply)
 
 			if(p_target != NULL)
 			{
-				p_target->RemoveFlag(PLAYER_FIELD_BYTES, 0x2000);
+				//p_target->RemoveFlag(PLAYER_FIELD_BYTES2, 0x2000); FIX ME!!
 				p_target->SendSpellCooldownEvent(m_spellProto->Id);
 
 				if(p_target->m_outStealthDamageBonusPeriod && p_target->m_outStealthDamageBonusPct)
@@ -2856,22 +2856,22 @@ void Aura::SpellAuraModInvisibility(bool apply)
 	{
 		m_target->SetInvisibility(GetSpellId());
 		m_target->m_invisFlag = static_cast<uint8>(mod->m_miscValue);
-		if(m_target->IsPlayer())
-		{
-			if(GetSpellId() == 32612)
-				TO< Player* >(m_target)->SetFlag(PLAYER_FIELD_BYTES, 0x4000);   //Mage Invis self visual
-		}
+		//if(m_target->IsPlayer())
+		//{
+			//if(GetSpellId() == 32612)
+				//TO< Player* >(m_target)->SetFlag(PLAYER_FIELD_BYTES2, 0x4000);   //Mage Invis self visual
+		//}
 
 		m_target->RemoveAurasByInterruptFlag(AURA_INTERRUPT_ON_INVINCIBLE);
 	}
 	else
 	{
 		m_target->m_invisFlag = INVIS_FLAG_NORMAL;
-		if(m_target->IsPlayer())
-		{
-			if(GetSpellId() == 32612)
-				TO< Player* >(m_target)->RemoveFlag(PLAYER_FIELD_BYTES, 0x4000);
-		}
+		//if(m_target->IsPlayer())
+		//{
+		//	if(GetSpellId() == 32612)
+		//		TO< Player* >(m_target)->RemoveFlag(PLAYER_FIELD_BYTES2, 0x4000);
+		//}
 	}
 
 	m_target->m_invisible = apply;
@@ -3137,9 +3137,9 @@ void Aura::SpellAuraPeriodicEnergize(bool apply)
 
 void Aura::EventPeriodicEnergize(uint32 amount, uint32 type)
 {
-	uint32 POWER_TYPE = UNIT_FIELD_POWER1 + type;
+	uint32 POWER_TYPE = UNIT_FIELD_POWER + 1 + type;
 
-	ARCEMU_ASSERT(POWER_TYPE <= UNIT_FIELD_POWER5);
+	ARCEMU_ASSERT(POWER_TYPE <= UNIT_FIELD_POWER + 5);
 
 	Unit* ucaster = GetUnitCaster();
 	if(ucaster == NULL)
@@ -5512,9 +5512,9 @@ void Aura::EventPeriodicTrigger(uint32 amount, uint32 type)
 
 void Aura::EventPeriodicEnergizeVariable(uint32 amount, uint32 type)
 {
-	uint32 POWER_TYPE = UNIT_FIELD_POWER1 + type;
+	uint32 POWER_TYPE = UNIT_FIELD_POWER + 1 + type;
 
-	ARCEMU_ASSERT(POWER_TYPE <= UNIT_FIELD_POWER5);
+	ARCEMU_ASSERT(POWER_TYPE <= UNIT_FIELD_POWER + 5);
 
 	Unit* ucaster = GetUnitCaster();
 	if(ucaster != NULL)
@@ -6573,7 +6573,7 @@ void Aura::SpellAuraModIncreaseEnergyPerc(bool apply)
 
 	if(apply)
 	{
-		mod->fixed_amount[mod->i] = m_target->GetModPUInt32Value(UNIT_FIELD_MAXPOWER1 + mod->m_miscValue, mod->m_amount);
+		mod->fixed_amount[mod->i] = m_target->GetModPUInt32Value(UNIT_FIELD_MAXPOWER + 1 + mod->m_miscValue, mod->m_amount);
 		m_target->ModMaxPower(mod->m_miscValue, mod->fixed_amount[mod->i]);
 		if(p_target != NULL && mod->m_miscValue == POWER_TYPE_MANA)
 			p_target->SetManaFromSpell(p_target->GetManaFromSpell() + mod->fixed_amount[mod->i]);
@@ -8106,7 +8106,7 @@ void Aura::SpellAuraSpellHealingStatPCT(bool apply)
 		for( uint32 x = 1; x < 7; x++ )
 			m_target->HealDoneMod[x] += mod->realamount;*/
 
-		mod->realamount = ((m_target->GetUInt32Value(UNIT_FIELD_SPIRIT) * mod->m_amount) / 100);
+		mod->realamount = ((m_target->GetUInt32Value(UNIT_FIELD_STAT0 + 4) * mod->m_amount) / 100);
 
 		TO_PLAYER(m_target)->ModifyBonuses(CRITICAL_STRIKE_RATING, mod->realamount, true);
 		TO_PLAYER(m_target)->UpdateChances();
@@ -8966,17 +8966,17 @@ void Aura::SpellAuraMirrorImage2(bool apply)
 
 			item = p->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_MAINHAND);
 			if(item != NULL)
-				m_target->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID, item->GetProto()->ItemId);
+				m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, item->GetProto()->ItemId);
 
 			item = p->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_OFFHAND);
 			if(item != NULL)
-				m_target->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 1, item->GetProto()->ItemId);
+				m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, item->GetProto()->ItemId);
 		}
 		else
 		{
-			m_target->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID, GetCaster()->GetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID));
-			m_target->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 1, GetCaster()->GetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 1));
-			m_target->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 2, GetCaster()->GetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 2));
+			m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, GetCaster()->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID));
+			m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, GetCaster()->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1));
+			m_target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, GetCaster()->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2));
 		}
 	}
 }

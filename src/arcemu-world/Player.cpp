@@ -647,6 +647,237 @@ uint32 GetSpellForLanguage(uint32 SkillID)
 	return 0;
 }
 
+bool Player::BuildEnumData(QueryResult* result, ByteBuffer* dataBuffer, ByteBuffer* bitBuffer)
+{
+
+	struct player_item
+	{
+		uint32 displayid;
+		uint8 invtype;
+		uint32 enchantment; // added in 2.4
+	};
+
+	player_item items[INVENTORY_SLOT_BAG_END];
+	int8 slot;
+	int8 containerslot;
+	uint32 i;
+	ItemPrototype* proto;
+	QueryResult* res;
+	CreatureInfo* info = NULL;
+	uint32 num = 0;
+	uint32 MaxAvailCharLevel = 0;
+	Field* fields;
+	//uint32 flags;
+
+			//          0      1      2     3      4      5      6        7       8         9           10       11     12      13       14          15              16                  17               18
+			//("SELECT guid, level, race, class, gender, bytes, bytes2, name, positionX, positionY, positionZ, mapId, zoneId, banned, restState, deathstate, forced_rename_pending, player_flags, guild_data.guildid FROM characters LEFT JOIN guild_data ON characters.guid = guild_data.playerid WHERE acct=%u ORDER BY guid LIMIT 10", GetAccountId());
+
+			fields = result->Fetch();
+
+
+			ObjectGuid guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, 0x000);
+			uint8 level = fields[1].GetUInt8();
+			uint8 race = fields[2].GetUInt8();
+			uint8 Class = fields[3].GetUInt8();
+			uint8 gender = fields[4].GetUInt8();
+			std::string name = fields[7].GetString();
+			float x = fields[8].GetFloat();
+			float y = fields[9].GetFloat();
+			float z = fields[10].GetFloat();
+			uint32 mapId = uint32(fields[11].GetUInt16());
+			uint32 zone = fields[12].GetUInt16();  // zoneId
+
+			uint32 playerFlags = fields[14].GetUInt32();
+			uint32 atLoginFlags = fields[15].GetUInt32();
+
+			uint32 _GID = fields[18].GetUInt32();
+			ObjectGuid guildGuid = MAKE_NEW_GUID(_GID, 0, _GID ? uint32(0x1FF) : 0);
+			uint8 skin = uint8(fields[5].GetUInt32() & 0xFF);
+			uint8 face = uint8((fields[5].GetUInt32() >> 8) & 0xFF);
+			uint8 hairStyle = uint8((fields[5].GetUInt32() >> 16) & 0xFF);
+			uint8 hairColor = uint8((fields[5].GetUInt32() >> 24) & 0xFF);
+			uint8 facialHair = uint8(fields[6].GetUInt32() & 0xFF);
+
+			uint32 charFlags = 0;			
+
+			/*if(atLoginFlags != 0)
+				charFlags |= 0x00002000;	//Character is dead       ////////////////////////
+			if(flags & PLAYER_FLAG_NOHELM)                            ///////   Fix       ////
+				charFlags |= 0x00000400;	//Helm not displayed      ///////   This      ////
+			if(flags & PLAYER_FLAG_NOCLOAK)                           ///////   Area      ////
+				charFlags |= 0x00000800;	//Cloak not displayed*/   ////////////////////////
+
+			uint32 petDisplayId;
+			uint32 petLevel;
+			uint32 petFamily;
+			
+			if(Class == WARLOCK || Class == HUNTER)
+			{
+				res = CharacterDatabase.Query("SELECT entry, level FROM playerpets WHERE ownerguid = %u AND MOD( active, 10 ) = 1 AND alive = TRUE;", Arcemu::Util::GUID_LOPART(guid));
+
+				if(res)
+				{
+					petLevel = res->Fetch()[1].GetUInt32();
+					info = CreatureNameStorage.LookupEntry(res->Fetch()[0].GetUInt32());
+					delete res;
+				}
+				else
+					info = NULL;
+			}
+			else
+				info = NULL;
+
+			if(info)
+			{
+			    petDisplayId = uint32(info->Male_DisplayID);
+				petFamily = uint32(info->Family);
+			}
+			else
+			{
+			    petDisplayId = 0;
+				petLevel = 0;
+				petFamily = 0;
+			}
+		    
+			bitBuffer->WriteBit(guildGuid[4]);
+			bitBuffer->WriteBit(guid[0]);
+			bitBuffer->WriteBit(guildGuid[3]);
+			bitBuffer->WriteBit(guid[3]);
+			bitBuffer->WriteBit(guid[7]);
+			bitBuffer->WriteBit(0); // Can boost ?
+			bitBuffer->WriteBit(atLoginFlags & 0x20);
+			bitBuffer->WriteBit(guid[6]);
+			bitBuffer->WriteBit(guildGuid[6]);
+			bitBuffer->WriteBits(uint32(name.length()), 6);
+			bitBuffer->WriteBit(guid[1]);
+			bitBuffer->WriteBit(guildGuid[1]);
+			bitBuffer->WriteBit(guildGuid[0]);
+			bitBuffer->WriteBit(guid[4]);
+			bitBuffer->WriteBit(guildGuid[7]);
+			bitBuffer->WriteBit(guid[2]);
+			bitBuffer->WriteBit(guid[5]);
+			bitBuffer->WriteBit(guildGuid[2]);
+			bitBuffer->WriteBit(guildGuid[5]);
+
+			// Character data
+			*dataBuffer << uint32(0);                                   // UNK02 - might be swaped with UNK03
+
+			dataBuffer->WriteByteSeq(guid[1]);
+
+			*dataBuffer << uint8(0);                                 // List order
+			*dataBuffer << uint8(hairStyle);                            // Hair style
+
+			dataBuffer->WriteByteSeq(guildGuid[2]);
+			dataBuffer->WriteByteSeq(guildGuid[0]);
+			dataBuffer->WriteByteSeq(guildGuid[6]);
+
+			dataBuffer->append(name.c_str(), name.length());            // Name
+
+			dataBuffer->WriteByteSeq(guildGuid[3]);
+
+			*dataBuffer << float(x);                                    // X
+			*dataBuffer << uint32(0);                                   // UNK00 new field - Boost fieldand the pet fields
+			*dataBuffer << uint8(face);                                 // Face
+			*dataBuffer << uint8(Class);                          // Class
+
+			dataBuffer->WriteByteSeq(guildGuid[5]);
+
+			res = CharacterDatabase.Query("SELECT containerslot, slot, entry, enchantments FROM playeritems WHERE ownerguid=%u and containerslot=-1 and slot < 23", Arcemu::Util::GUID_LOPART(guid));
+
+			memset(items, 0, sizeof(items));
+			uint32 enchantid;
+			EnchantEntry * enc;
+			if (res)
+			{
+				do
+				{
+					containerslot = res->Fetch()[0].GetInt8();
+					slot = res->Fetch()[1].GetInt8();
+					if (containerslot == -1 && slot < INVENTORY_SLOT_BAG_END && slot >= EQUIPMENT_SLOT_START)
+					{
+						proto = ItemPrototypeStorage.LookupEntry(res->Fetch()[2].GetUInt32());
+						if (proto)
+						{
+							if (!(slot == EQUIPMENT_SLOT_HEAD && (playerFlags & (uint32)PLAYER_FLAG_NOHELM) != 0) &&
+								!(slot == EQUIPMENT_SLOT_BACK && (playerFlags & (uint32)PLAYER_FLAG_NOCLOAK) != 0))
+							{
+								items[slot].displayid = proto->DisplayInfoID;
+								items[slot].invtype = proto->InventoryType;
+								// weapon glows
+								if (slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND)
+								{
+									// get enchant visual ID
+									const char * enchant_field = res->Fetch()[3].GetString();
+									if (sscanf(enchant_field, "%u,0,0;", (unsigned int *)&enchantid) == 1 && enchantid > 0)
+									{
+										enc = dbcEnchant.LookupEntry(enchantid);
+										if (enc != NULL)
+											items[slot].enchantment = enc->visual;
+										else
+											items[slot].enchantment = 0;;
+									}
+								}
+							}
+						}
+					}
+				} while (res->NextRow());
+				delete res;
+				res = NULL;
+			}
+
+			for (i = 0; i < INVENTORY_SLOT_BAG_END; ++i) //23 * 5 bytes
+			{
+				*dataBuffer << uint32(items[i].enchantment);
+				*dataBuffer << uint8(items[i].invtype);
+				*dataBuffer << uint32(items[i].displayid);
+			}
+
+			*dataBuffer << uint32(0x0);                   // Character customization flags
+
+			dataBuffer->WriteByteSeq(guid[3]);
+			dataBuffer->WriteByteSeq(guid[5]);
+
+			*dataBuffer << uint32(petFamily);                           // Pet family
+
+			dataBuffer->WriteByteSeq(guildGuid[4]);
+
+			*dataBuffer << uint32(mapId);                               // Map Id
+			*dataBuffer << uint8(race);                           // Race
+			*dataBuffer << uint8(skin);                                 // Skin
+
+			dataBuffer->WriteByteSeq(guildGuid[1]);
+
+			*dataBuffer << uint8(level);                                // Level
+
+			dataBuffer->WriteByteSeq(guid[0]);
+			dataBuffer->WriteByteSeq(guid[2]);
+
+			*dataBuffer << uint8(hairColor);                            // Hair color
+			*dataBuffer << uint8(gender);                               // Gender
+			*dataBuffer << uint8(facialHair);                           // Facial hair
+
+			*dataBuffer << uint32(petLevel);                            // Pet level
+
+			dataBuffer->WriteByteSeq(guid[4]);
+			dataBuffer->WriteByteSeq(guid[7]);
+
+			*dataBuffer << float(y);                                    // Y
+			*dataBuffer << uint32(petDisplayId);                        // Pet DisplayID
+			*dataBuffer << uint32(0);                                   // UNK03 - might be swaped with UNK02 and the pet fields
+
+			dataBuffer->WriteByteSeq(guid[6]);
+
+			*dataBuffer << uint32(charFlags);                           // Character flags
+
+			dataBuffer->WriteByteSeq(guildGuid[7]);
+
+			*dataBuffer << uint32(zone);                                // Zone id
+			*dataBuffer << float(z);                                    // Z
+
+			return true;
+
+}
+
 ///====================================================================
 ///  Create
 ///  params: p_newChar
@@ -1630,8 +1861,12 @@ void Player::smsg_InitialSpells()
 	size_t pos;
 
 	WorldPacket data(SMSG_INITIAL_SPELLS, 5 + (spellCount * 4) + (itemCount * 4));
-	data << uint8(0);
-	data << uint16(spellCount); // spell count
+	data.WriteBit(0);
+
+	size_t bitPos = data.bitwpos();
+	data.WriteBits(0, 22); // spell count placeholder
+
+	data.FlushBits();
 
 	SpellSet::iterator sitr;
 	for (sitr = mSpells.begin(); sitr != mSpells.end(); ++sitr)
@@ -1639,10 +1874,13 @@ void Player::smsg_InitialSpells()
 		// todo: check out when we should send 0x0 and when we should send 0xeeee
 		// this is not slot, values is always eeee or 0, seems to be cooldown
 		data << uint32(*sitr);				   // spell id
-		data << uint16(0x0000);
+		//data << uint16(0x0000);
 	}
 
-	pos = data.wpos();
+	data.PutBits(bitPos, spellCount, 22);
+	data.FlushBits();
+
+	/*pos = data.wpos();
 	data << uint16(0);		// placeholder
 
 	itemCount = 0;
@@ -1700,8 +1938,9 @@ void Player::smsg_InitialSpells()
 	GetSession()->SendPacket(&data);
 
 	uint32 v = 0;
-	GetSession()->OutPacket(0x041d, 4, &v);
+	GetSession()->OutPacket(0x041d, 4, &v);*/
 	//Log::getSingleton( ).outDetail( "CHARACTER: Sent Initial Spells" );
+	GetSession()->SendPacket(&data);
 }
 
 void Player::smsg_TalentsInfo(bool SendPetTalents)
@@ -2183,22 +2422,22 @@ void Player::InitVisibleUpdateBits()
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_TARGET + 1);
 
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_HEALTH);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER1);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER2);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER3);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER4);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER5);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 1);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 2);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 3);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 4);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 5);
 
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXHEALTH);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER1);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER2);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER3);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER4);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER5);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 1);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 2);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 3);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 4);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 5);
 
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 1);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_VIRTUAL_ITEM_SLOT_ID + 2);
+	Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID);
+	Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID + 1);
+	Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID + 2);
 
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_LEVEL);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_FACTIONTEMPLATE);
@@ -2219,7 +2458,7 @@ void Player::InitVisibleUpdateBits()
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_PET_NAME_TIMESTAMP);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT + 1);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_SPELL);
+	Player::m_visibleUpdateMask.SetBit(UNIT_CHANNEL_SPELL);
 	Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_DYNAMIC_FLAGS);
 	Player::m_visibleUpdateMask.SetBit(UNIT_NPC_FLAGS);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_HOVERHEIGHT);
@@ -2250,7 +2489,7 @@ void Player::InitVisibleUpdateBits()
 
 	//VLack: we have to send our quest list to the members of our group all the time for quest sharing's "who's on that quest" feature to work (in the quest log this way a number will be shown before the quest's name).
 	//Unfortunately we don't have code for doing this only on our group's members, so everyone will receive it. The non-group member's client will do whatever it wants with it, probably wasting a few CPU cycles, but that's fine with me.
-	for (uint16 i = PLAYER_QUEST_LOG_1_1; i <= PLAYER_QUEST_LOG_25_1; i += 5)
+	for (uint16 i = PLAYER_QUEST_LOG_1_1; i <= PLAYER_QUEST_LOG_1_1 + 0x4F; i += 5)
 	{
 		Player::m_visibleUpdateMask.SetBit(i);
 	}
@@ -2342,8 +2581,8 @@ void Player::SaveToDB(bool bNewCharacter /* =false */)
 	ss << m_uint32Values[PLAYER_FIELD_WATCHED_FACTION_INDEX] << ","
 		<< m_uint32Values[PLAYER_CHOSEN_TITLE] << ","
 		<< GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES) << ","
-		<< GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES1) << ","
-		<< GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES2) << ","
+		<< GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES + 1) << ","
+		<< GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES + 2) << ","
 		<< m_uint32Values[PLAYER_FIELD_COINAGE] << ",";
 
 	if ((getClass() == MAGE) || (getClass() == PRIEST) || (getClass() == WARLOCK))
@@ -2671,6 +2910,7 @@ void Player::RemovePendingPlayer()
 {
 	if (m_session)
 	{
+		LOG_ERROR("character login failed");
 		uint8 respons = E_CHAR_LOGIN_NO_CHARACTER;
 		m_session->OutPacket(SMSG_CHARACTER_LOGIN_FAILED, 1, &respons);
 		m_session->m_loggingInPlayer = NULL;
@@ -2898,8 +3138,8 @@ void Player::LoadFromDBProc(QueryResultVector & results)
 	m_uint32Values[PLAYER_FIELD_WATCHED_FACTION_INDEX] = get_next_field.GetUInt32();
 	SetChosenTitle(get_next_field.GetUInt32());
 	SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES, get_next_field.GetUInt64());
-	SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES1, get_next_field.GetUInt64());
-	SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES2, get_next_field.GetUInt64());
+	SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES + 1, get_next_field.GetUInt64());
+	SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES + 2, get_next_field.GetUInt64());
 	m_uint32Values[PLAYER_FIELD_COINAGE] = get_next_field.GetUInt32();
 	//m_uint32Values[ PLAYER_AMMO_ID ]						= get_next_field.GetUInt32();
 
@@ -5388,7 +5628,7 @@ void Player::UpdateStats()
 	}
 
 	/* modifiers */
-	RAP += m_rap_mod_pct * m_uint32Values[UNIT_FIELD_STAT3] / 100;
+	RAP += m_rap_mod_pct * m_uint32Values[UNIT_FIELD_STAT0 + 3] / 100;
 
 	if (RAP < 0)RAP = 0;
 	if (AP < 0)AP = 0;
@@ -5414,7 +5654,7 @@ void Player::UpdateStats()
 
 	uint32 hp = GetBaseHealth();
 
-	int32 stat_bonus = GetUInt32Value(UNIT_FIELD_POSSTAT2) - GetUInt32Value(UNIT_FIELD_NEGSTAT2);
+	int32 stat_bonus = GetUInt32Value(UNIT_FIELD_POSSTAT0 + 2) - GetUInt32Value(UNIT_FIELD_NEGSTAT0 + 2);
 	if (stat_bonus < 0)
 		stat_bonus = 0; // Avoid of having negative health
 	int32 bonus = stat_bonus * 10 + m_healthfromspell + m_healthfromitems;
@@ -5465,7 +5705,7 @@ void Player::UpdateStats()
 		// MP
 		uint32 mana = GetBaseMana();
 
-		stat_bonus = GetUInt32Value(UNIT_FIELD_POSSTAT3) - GetUInt32Value(UNIT_FIELD_NEGSTAT3);
+		stat_bonus = GetUInt32Value(UNIT_FIELD_POSSTAT0 + 3) - GetUInt32Value(UNIT_FIELD_NEGSTAT0 + 3);
 		if (stat_bonus < 0)
 			stat_bonus = 0; // Avoid of having negative mana
 		bonus = stat_bonus * 15 + m_manafromspell + m_manafromitems;
@@ -5787,7 +6027,7 @@ bool Player::CanSee(Object* obj) // * Invisibility & Stealth Detection - Partha 
 
 		if (gObj->invisible) // Invisibility - Detection of GameObjects
 		{
-			uint64 owner = gObj->GetUInt64Value(GO_FIELD_CREATED_BY);
+			uint64 owner = gObj->GetUInt64Value(OBJECT_FIELD_CREATED_BY);
 
 			if (GetGUID() == owner) // the owner of an object can always see it
 				return true;
@@ -6320,12 +6560,12 @@ bool Player::removeDeletedSpell(uint32 SpellID)
 
 void Player::EventActivateGameObject(GameObject* obj)
 {
-	obj->BuildFieldUpdatePacket(this, GAMEOBJECT_DYNAMIC, 1 | 8);
+	obj->BuildFieldUpdatePacket(this, 8+8, 1 | 8);
 }
 
 void Player::EventDeActivateGameObject(GameObject* obj)
 {
-	obj->BuildFieldUpdatePacket(this, GAMEOBJECT_DYNAMIC, 0);
+	obj->BuildFieldUpdatePacket(this, 8+8, 0);
 }
 
 void Player::EventTimedQuestExpire(uint32 questid){
@@ -6507,12 +6747,12 @@ void Player::CalcResistance(uint32 type)
 	pos += FlatResistanceModifierPos[type];
 	neg += FlatResistanceModifierNeg[type];
 	res = BaseResistance[type] + pos - neg;
-	if (type == 0)res += m_uint32Values[UNIT_FIELD_STAT1] * 2; //fix armor from agi
+	if (type == 0)res += m_uint32Values[UNIT_FIELD_STAT0 + 1] * 2; //fix armor from agi
 	if (res < 0)res = 0;
 	pos += (res * ResistanceModPctPos[type]) / 100;
 	neg += (res * ResistanceModPctNeg[type]) / 100;
 	res = pos - neg + BaseResistance[type];
-	if (type == 0)res += m_uint32Values[UNIT_FIELD_STAT1] * 2; //fix armor from agi
+	if (type == 0)res += m_uint32Values[UNIT_FIELD_STAT0 + 1] * 2; //fix armor from agi
 
 	// Dynamic aura 285 application, removing bonus
 	for (uint32 x = MAX_TOTAL_AURAS_START; x < MAX_TOTAL_AURAS_END; x++)
@@ -6960,7 +7200,7 @@ void Player::RegenerateHealth(bool inCombat)
 	//gtFloat* HPRegenBase = dbcHPRegenBase.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
 	//gtFloat* HPRegen =  dbcHPRegen.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
 
-	uint32 basespirit = m_uint32Values[UNIT_FIELD_SPIRIT];
+	uint32 basespirit = m_uint32Values[UNIT_FIELD_STAT0 + 4];
 	uint32 extraspirit = 0;
 
 	if (basespirit > 50)
@@ -7037,7 +7277,7 @@ void Player::RegenerateEnergy()
 	}
 	else // let player's own client handle normal regen rates.
 	{
-		m_uint32Values[UNIT_FIELD_POWER4] = (cur >= mh) ? mh : cur;
+		m_uint32Values[UNIT_FIELD_POWER + 4] = (cur >= mh) ? mh : cur;
 		SendPowerUpdate(false); // send update to other in-range players
 	}
 }
@@ -8012,7 +8252,7 @@ void Player::RequestDuel(Player* pTarget)
 	pGameObj->CreateFromProto(21680, GetMapId(), x, y, z, GetOrientation());
 
 	//Spawn the Flag
-	pGameObj->SetUInt64Value(GO_FIELD_CREATED_BY, GetGUID());
+	pGameObj->SetUInt64Value(OBJECT_FIELD_CREATED_BY, GetGUID());
 	pGameObj->SetFaction(GetFaction());
 	pGameObj->SetLevel(getLevel());
 
@@ -8519,12 +8759,28 @@ void Player::SafeTeleport(MapMgr* mgr, const LocationVector & vec)
 
 	m_mapId = mgr->GetMapId();
 	m_instanceId = mgr->GetInstanceID();
+
 	WorldPacket data(SMSG_TRANSFER_PENDING, 20);
+	data.WriteBit(0);       // unknown
+	data.WriteBit(transporter_info.guid != NULL);
+
+	data << uint32(m_mapId);
+
+	if (transporter_info.guid)
+	{
+		// Might be in wrong order
+		data << GetMapId();
+		data << transporter_info.guid;
+	}
 	data << mgr->GetMapId();
 	GetSession()->SendPacket(&data);
 
 	data.Initialize(SMSG_NEW_WORLD);
-	data << mgr->GetMapId() << vec << vec.o;
+	data << float(vec.x);
+	data << uint32(m_mapId);
+	data << float(vec.y);
+	data << float(vec.z);
+	data << float(vec.o);
 	GetSession()->SendPacket(&data);
 
 	SetPlayerStatus(TRANSFER_PENDING);
@@ -10029,7 +10285,26 @@ void Player::UnPossess()
 
 	/* send "switch mover" packet */
 	WorldPacket data(SMSG_CLIENT_CONTROL_UPDATE, 10);
-	data << pTarget->GetNewGUID() << uint8(0);
+	Unit* target;
+	ObjectGuid guid = target->GetGUID();
+	data.WriteBit(guid[2]);  // 26
+	data.WriteBit(guid[7]);  // 31
+	data.WriteBit(false);
+	data.WriteBit(guid[0]);  // 24
+	data.WriteBit(guid[3]);  // 27
+	data.WriteBit(guid[6]);  // 30
+	data.WriteBit(guid[5]);  // 29
+	data.WriteBit(guid[1]);  // 25
+	data.WriteBit(guid[4]);  // 28
+
+	data.WriteByteSeq(guid[1]);  // 25
+	data.WriteByteSeq(guid[5]);  // 29
+	data.WriteByteSeq(guid[7]);  // 31
+	data.WriteByteSeq(guid[4]);  // 28
+	data.WriteByteSeq(guid[2]);  // 26
+	data.WriteByteSeq(guid[6]);  // 30
+	data.WriteByteSeq(guid[3]);  // 27
+	data.WriteByteSeq(guid[0]);  // 24
 	m_session->SendPacket(&data);
 
 	if (!(pTarget->IsPet() && TO< Pet* >(pTarget) == GetSummon()))
@@ -11827,7 +12102,7 @@ void Player::UpdatePowerAmm()
 	WorldPacket data(SMSG_POWER_UPDATE, 5);
 	FastGUIDPack(data, GetGUID());
 	data << uint8(GetPowerType());
-	data << GetUInt32Value(UNIT_FIELD_POWER1 + GetPowerType());
+	data << GetUInt32Value(UNIT_FIELD_POWER + 1 + GetPowerType());
 	SendMessageToSet(&data, true);
 }
 // Initialize Glyphs or update them after level change
