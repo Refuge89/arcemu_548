@@ -181,15 +181,12 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 
 	CreatureInfo *ci = CreatureNameStorage.LookupEntry(entry);
 	data << uint32(entry);
-	data.WriteBit(ci != 0);                                    // Has data
+	data.WriteBit(ci != 0);
 
 	if (ci)
 	{
-
-		//LOG_DEBUG("WORLD: CMSG_CREATURE_QUERY '%s' - Entry: %u.", ci->Name.c_str(), entry);
-
 		data.WriteBits(strlen(ci->SubName) ? strlen(ci->SubName) + 1 : 0, 11);
-		data.WriteBits(6, 22);        // Quest items
+		data.WriteBits(6, 22);
 		data.WriteBits(0, 11);
 
 		for (int i = 0; i < 8; i++)
@@ -197,40 +194,40 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 			if (i == 0)
 				data.WriteBits(strlen(ci->Name) + 1, 11);
 			else
-				data.WriteBits(0, 11);                       // Name2, ..., name8
+				data.WriteBits(0, 11);
 		}
 
 		data.WriteBit(ci->Leader);
 		data.WriteBits(strlen(ci->info_str), 6);
 		data.FlushBits();
 
-		data << uint32(ci->killcredit[0]);                  // New in 3.1, kill credit
-		data << uint32(ci->Female_DisplayID2);                       // Modelid4
-		data << uint32(ci->Female_DisplayID);                       // Modelid2
-		data << uint32(ci->expansion);                      // Expansion Required
-		data << uint32(ci->Type);                           // CreatureType.dbc
-		data << float(ci->unkfloat1);                       // Hp modifier
-		data << uint32(ci->Flags1);                     // Flags
-		data << uint32(ci->Flags2);                    // Flags2
-		data << uint32(ci->Rank);                           // Creature Rank (elite, boss, etc)
-		data << uint32(ci->waypointid);                     // CreatureMovementInfo.dbc
+		data << uint32(ci->killcredit[0]);
+		data << uint32(ci->Female_DisplayID2);
+		data << uint32(ci->Female_DisplayID);
+		data << uint32(ci->expansion);
+		data << uint32(ci->Type);
+		data << float(ci->unkfloat1);
+		data << uint32(ci->Flags1);
+		data << uint32(ci->Flags2);
+		data << uint32(ci->Rank);
+		data << uint32(ci->waypointid);
 		data << ci->Name;
 
 		if (ci->SubName != "")
-			data << ci->SubName;                                // Subname
+			data << ci->SubName;
 
-		data << uint32(ci->Male_DisplayID);                       // Modelid1
-		data << uint32(ci->Male_DisplayID2);                       // Modelid3
+		data << uint32(ci->Male_DisplayID);
+		data << uint32(ci->Male_DisplayID2); 
 
 		if (ci->info_str != "")
-			data << ci->info_str;                           // "Directions" for guard, string for Icons 2.3.0
+			data << ci->info_str;
 
 		for (uint32 i = 0; i < 6; ++i)
-			data << uint32(ci->QuestItems[i]);              // ItemId[6], quest drop
+			data << uint32(ci->QuestItems[i]);
 
-		data << uint32(ci->killcredit[1]);                  // New in 3.1, kill credit
-		data << float(ci->unkfloat2);                         // Mana modifier
-		data << uint32(ci->Family);                         // CreatureFamily.dbc
+		data << uint32(ci->killcredit[1]);
+		data << float(ci->unkfloat2);
+		data << uint32(ci->Family);
 
 		LOG_DEBUG("WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
 	}
@@ -503,9 +500,9 @@ void WorldSession::HandleAchievmentQueryOpcode(WorldPacket & recv_data)
 
 void WorldSession::SendRealmNameQueryOpcode(uint32 realmId)
 {
-	bool found = false;
+		bool found = false;
 
-	uint32 realmcount = Config.RealmConfig.GetIntDefault("LogonServer", "RealmCount", 1);
+		uint32 realmcount = Config.RealmConfig.GetIntDefault("LogonServer", "RealmCount", 1);
 
 	
 		if (realmcount > 0)
@@ -525,6 +522,7 @@ void WorldSession::SendRealmNameQueryOpcode(uint32 realmId)
 			data.WriteBits(realmName.length(), 8);
 			data.WriteBit(realmId);
 			data.WriteBits(realmName.length(), 8);
+
 			data.FlushBits();
 
 			data.WriteString(realmName);

@@ -21,38 +21,81 @@
 #include "StdAfx.h"
 initialiseSingleton(QuestMgr);
 
+// Just test stuff
+inline uint32 GUID_HIPART(uint64 guid);
+inline uint32 GUID_ENPART(uint64 x);
+inline uint32 GUID_LOPART(uint64 x);
+inline uint32 PAIR64_LOPART(uint64 x);
+
+uint32 GUID_HIPART(uint64 guid)
+{
+	uint32 t = ((uint64(guid) >> 48) & 0x0000FFFF);
+	return (t == HIGHGUID_TYPE_CORPSE || t == HIGHGUID_TYPE_AREATRIGGER) ? t : ((t >> 4) & 0x00000FFF);
+}
+
+uint32 GUID_LOPART(uint64 x)
+{
+	// _GUID_LOPART_3 and _GUID_LOPART_2 were both equal to PAIR64_LOPART
+	return (uint32)(x & 0LL(0x00000000FFFFFFFF));
+}
+
 void WorldSession::HandleQuestgiverStatusQueryOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	LOG_DEBUG("WORLD: Received CMSG_QUESTGIVER_STATUS_QUERY.");
+	ObjectGuid guid;
+
+	guid[4] = recv_data.ReadBit();
+	guid[3] = recv_data.ReadBit();
+	guid[2] = recv_data.ReadBit();
+	guid[1] = recv_data.ReadBit();
+	guid[0] = recv_data.ReadBit();
+	guid[5] = recv_data.ReadBit();
+	guid[7] = recv_data.ReadBit();
+	guid[6] = recv_data.ReadBit();
+
+	recv_data.ReadByteSeq(guid[5]);
+	recv_data.ReadByteSeq(guid[7]);
+	recv_data.ReadByteSeq(guid[4]);
+	recv_data.ReadByteSeq(guid[0]);
+	recv_data.ReadByteSeq(guid[2]);
+	recv_data.ReadByteSeq(guid[1]);
+	recv_data.ReadByteSeq(guid[6]);
+	recv_data.ReadByteSeq(guid[3]);
+
+	//LOG_ERROR("WORLD: questgiver GUID %u", GUID_LOPART(guid));
+
+	/*uint32 questStatus = 0;
+	uint32 defstatus = 0;
 
 	if(_player->IsInBg())
 		return; //Added in 3.0.2, quests can be shared anywhere besides a BG
-
-	uint64 guid;
-	WorldPacket data(SMSG_QUESTGIVER_STATUS, 12);
+		
 	Object* qst_giver = NULL;
 
-	recv_data >> guid;
 	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
 	if(guidtype == HIGHGUID_TYPE_UNIT)
 	{
 		Creature* quest_giver = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
-		if(quest_giver)
+		if (quest_giver)
+		{
 			qst_giver = quest_giver;
+		}
 		else
+		{
+			LOG_ERROR("!if (quest_giver)");
 			return;
+		}
 
 		if(!quest_giver->isQuestGiver())
 		{
-			LOG_DEBUG("WORLD: Creature is not a questgiver.");
+			LOG_ERROR("WORLD: Creature is not a questgiver.");
 			return;
 		}
 	}
 	else if(guidtype == HIGHGUID_TYPE_ITEM)
 	{
-		Item* quest_giver = GetPlayer()->GetItemInterface()->GetItemByGUID(guid);
+		Item* quest_giver = GetPlayer()->GetItemInterface()->GetItemByGUID(GET_LOWGUID_PART(guid));
 		if(quest_giver)
 			qst_giver = quest_giver;
 		else
@@ -69,12 +112,31 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode(WorldPacket & recv_data)
 
 	if(!qst_giver)
 	{
-		LOG_DEBUG("WORLD: Invalid questgiver GUID " I64FMT ".", guid);
+		LOG_ERROR("WORLD: Invalid questgiver GUID %u ", GET_LOWGUID_PART(guid));
 		return;
 	}
 
-	data << guid << sQuestMgr.CalcStatus(qst_giver, GetPlayer());
-	SendPacket(&data);
+	WorldPacket data(SMSG_QUESTGIVER_STATUS, 1 + 8 + 4);
+
+	data.WriteBit(guid2[1]);
+	data.WriteBit(guid2[7]);
+	data.WriteBit(guid2[4]);
+	data.WriteBit(guid2[2]);
+	data.WriteBit(guid2[5]);
+	data.WriteBit(guid2[3]);
+	data.WriteBit(guid2[6]);
+	data.WriteBit(guid2[0]);
+
+	data.WriteByteSeq(guid2[7]);
+	data << uint32(questStatus);
+	data.WriteByteSeq(guid2[4]);
+	data.WriteByteSeq(guid2[6]);
+	data.WriteByteSeq(guid2[1]);
+	data.WriteByteSeq(guid2[5]);
+	data.WriteByteSeq(guid2[2]);
+	data.WriteByteSeq(guid2[0]);
+	data.WriteByteSeq(guid2[3]);
+	SendPacket(&data);*/
 }
 
 void WorldSession::HandleQuestgiverHelloOpcode(WorldPacket & recv_data)

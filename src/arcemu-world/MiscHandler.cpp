@@ -815,16 +815,24 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPacket & recv_data)
 	CHECK_INWORLD_RETURN
 
 	Player* pPlayer = GetPlayer();
+
 	WorldPacket data(SMSG_LOGOUT_RESPONSE, 5);
 
 	LOG_DEBUG("WORLD: Recvd CMSG_LOGOUT_REQUEST Message");
 
 	if(pPlayer)
 	{
+		if (pPlayer->m_isResting || pPlayer->GetTaxiState())
+		{
+			SetLogoutTimer(1);
+			return;
+		}
+
 		if(!sHookInterface.OnLogoutRequest(pPlayer))
 		{
-			// Declined Logout Request
-			data << uint32(1) << uint8(0);
+			data << uint32(1);
+			data.WriteBit(0);
+			data.FlushBits();
 			SendPacket(&data);
 			return;
 		}
@@ -839,21 +847,21 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPacket & recv_data)
 		if(pPlayer->CombatStatus.IsInCombat() ||	//can't quit still in combat
 		        pPlayer->DuelingWith != NULL)			//can't quit still dueling or attacking
 		{
-			data << uint32(1) << uint8(0);
+			data << uint32(1);
+			data.WriteBit(0);
+			data.FlushBits();
 			SendPacket(&data);
 			return;
 		}
 
-		if(pPlayer->m_isResting ||	  // We are resting so log out instantly
-		        pPlayer->GetTaxiState())  // or we are on a taxi
+		if(pPlayer->m_isResting || pPlayer->GetTaxiState())
 		{
-			//Logout on NEXT sessionupdate to preserve processing of dead packets (all pending ones should be processed)
 			SetLogoutTimer(1);
 			return;
 		}
 
-		data << uint32(0); //Filler
-		data << uint8(0); //Logout accepted
+		data.WriteBit(0);
+		data.FlushBits();
 		SendPacket(&data);
 
 		//stop player from moving
