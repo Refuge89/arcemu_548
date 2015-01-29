@@ -97,7 +97,6 @@ ENDIF( WIN32 )
 
 SET(ARCEMU_SCRIPTLIB_PATH "modules" CACHE PATH "The directory which contains the 'lib' directory that has the script libraries." )
 SET(BUILD_ARCEMUSCRIPTS TRUE CACHE BOOL "Set to false to NOT build script libraries." )
-SET(BUILD_TOOLS TRUE CACHE BOOL "Build Arcemu tools" )
 SET(VISUALSTUDIO_COMPILERHEAPLIMIT 400 CACHE STRING "Visual Studio compiler heap limit. Ignore on darwin and unix platforms.")
 
 include(CompilerVersion)
@@ -243,10 +242,6 @@ IF(NOT WIN32)
 	add_subdirectory(crashreport)
 ENDIF()
 add_subdirectory(scripts)
-
-IF( BUILD_TOOLS )
-	add_subdirectory(tools)
-ENDIF( BUILD_TOOLS )
 
 
 INSTALL(FILES ${INSTALLED_DEPENDENCIES} DESTINATION .)
