@@ -106,7 +106,7 @@ SET(sources
 	TerrainMgr.cpp 
 	TradeHandler.cpp 
 	TransporterHandler.cpp 
-	Unit.cpp 
+	Unit.cpp
 	Vehicle.cpp 
 	VehicleHandler.cpp
 	WayPoints.cpp 
@@ -157,7 +157,8 @@ SET(sources
 	Shaman.cpp
 	Monk.cpp
 	Warlock.cpp
-	Warrior.cpp )
+	Warrior.cpp
+)
 
 SET( headers
 	AchievementMgr.h
@@ -222,7 +223,7 @@ SET( headers
 	Master.h
 	MiscHandler.h
 	Monk.h
-    MovementHandler.h
+	MovementHandler.h
 	NameTables.h
 	NPCHandler.h
 	Object.h

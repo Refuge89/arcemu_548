@@ -204,6 +204,12 @@ class SERVER_DECL ChatHandler : public Singleton<ChatHandler>
 		~ChatHandler();
 
 		WorldPacket* FillMessageData(uint32 type, uint32 language,  const char* message, uint64 guid, uint8 flag = 0) const;
+
+		WorldPacket* BuildChatPacket(WorldPacket& data, uint32 chatType, uint32 language, ObjectGuid senderGUID, ObjectGuid receiverGUID, std::string const& message, uint8 chatTag,
+                                  std::string const& senderName /*= ""*/, std::string const& receiverName /*= ""*/,
+                                  uint32 achievementId /*= 0*/, bool gmMessage /*= false*/, std::string const& channelName /*= ""*/,
+                                  std::string const& addonPrefix /*= ""*/);
+
 		WorldPacket* FillSystemMessageData(const char* message) const;
 
 		int ParseCommands(const char* text, WorldSession* session);

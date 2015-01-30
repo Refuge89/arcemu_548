@@ -52,8 +52,6 @@ enum HIGHGUID_TYPE
 
 #define MAX_INTERACTION_RANGE 5.0f
 
-// TODO: fix that type mess
-
 enum TYPE
 {
     TYPE_OBJECT		 = 1,
@@ -642,6 +640,7 @@ class SERVER_DECL Object : public EventableObject
 		float m_swimSpeed;
 		float m_backSwimSpeed;
 		float m_turnRate;
+		float m_pitchRate;
 		float m_flySpeed;
 		float m_backFlySpeed;
 
@@ -699,7 +698,7 @@ class SERVER_DECL Object : public EventableObject
 				RemoveFromWorld(true);
 			delete this;
 		}
-		//! Play's a sound to players in range.
+		//! Plays a sound to players in range.
 		void PlaySoundToSet(uint32 sound_entry);
 		//! Is the player in a battleground?
 		bool IsInBg();
@@ -723,7 +722,7 @@ class SERVER_DECL Object : public EventableObject
 		void _BuildValuesUpdate(ByteBuffer* data, UpdateMask* updateMask, Player* target);
 
 		//! WoWGuid class
-		WoWGuid m_wowGuid;
+		WoWGuid m_wowGuid; // todo implement ObjectGuid all over the place, then remove this!
 		//! Type id.
 		uint8 m_objectTypeId;
 		//! Zone id.

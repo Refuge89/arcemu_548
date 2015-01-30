@@ -65,6 +65,7 @@ static const uint32 LanguageSkills[NUM_LANGUAGES] =
 
 void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 {
+	printf("chat packet, probably CHAT_MSG_SAY (CMSG_MESSAGECHAT_SAY)\n");
 	CHECK_INWORLD_RETURN
 
 	//CHECK_PACKET_SIZE(recv_data, 9);
@@ -89,8 +90,8 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         case CMSG_MESSAGECHAT_EMOTE:        type = CHAT_MSG_EMOTE;          break;
         case CMSG_MESSAGECHAT_PARTY:        type = CHAT_MSG_PARTY;          break;
         case CMSG_MESSAGECHAT_RAID:         type = CHAT_MSG_RAID;           break;
-        case CMSG_MESSAGECHAT_BATTLEGROUND: type = CHAT_MSG_BATTLEGROUND;   break;
-        case CMSG_MESSAGECHAT_RAID_WARNING: type = CHAT_MSG_RAID_WARNING;   break;
+        //case CMSG_MESSAGECHAT_BATTLEGROUND: type = CHAT_MSG_BATTLEGROUND;   break;
+        //case CMSG_MESSAGECHAT_RAID_WARNING: type = CHAT_MSG_RAID_WARNING;   break;
     }
 	//recv_data >> type;
 	recv_data >> lang;
@@ -149,6 +150,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 			break;
 	}
 
+	uint32 textLen = 0, receiverLen = 0;
 	std::string msg, to = "", channel = "", tmp;
 	msg.reserve(256);
 
@@ -156,9 +158,18 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 	switch(type)
 	{
 		case CHAT_MSG_SAY:
-            {
-                msg = recv_data.ReadString(recv_data.ReadBits(9));
-            }
+        case CHAT_MSG_EMOTE:
+        case CHAT_MSG_YELL:
+        case CHAT_MSG_PARTY:
+        case CHAT_MSG_GUILD:
+        case CHAT_MSG_OFFICER:
+        case CHAT_MSG_RAID:
+        case CHAT_MSG_RAID_WARNING:
+        case CHAT_MSG_BATTLEGROUND:
+		{
+			textLen = recv_data.ReadBits(9);
+			msg = recv_data.ReadString(textLen);
+        }
 			break;
 		default:
 			LOG_ERROR("CHAT: unknown msg type %u, lang: %u", type, lang);
@@ -176,6 +187,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 		return;
 
 	Channel* chn = NULL;
+
 	// Main chat message processing
 	switch(type)
 	{
@@ -206,6 +218,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 			break;
 		case CHAT_MSG_SAY:
 			{
+				printf("CHAT_MSG_SAY\n");
 				if(sWorld.interfaction_chat && lang > 0)
 					lang = 0;
 
@@ -220,13 +233,17 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
 				if(GetPlayer()->m_modlanguage >= 0)
 				{
+					printf("MODLANG > 0\n");
 					data = sChatHandler.FillMessageData(CHAT_MSG_SAY, GetPlayer()->m_modlanguage,  msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
 					GetPlayer()->SendMessageToSet(data, true);
 				}
 				else
 				{
 					if(lang > 0 && LanguageSkills[lang] && ! _player->_HasSkillLine(LanguageSkills[lang]))
+					{
+						printf("PLAYER DOES NOT HAVE SKILL LINE REQUIRED\n");
 						return;
+					}
 
 					if(lang == 0 && ! CanUseCommand('c') && ! sWorld.interfaction_chat)
 						return;
@@ -431,7 +448,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
 
 				//Sent the to Users id as the channel, this should be fine as it's not used for whisper
-				if(lang != -1) //DO NOT SEND if its an addon message!
+				if(lang != CHAT_MSG_ADDON) //DO NOT SEND if its an addon message!
 				{
 					data = sChatHandler.FillMessageData(CHAT_MSG_WHISPER_INFORM, LANG_UNIVERSAL, msg.c_str(), playercache->GetGUID(), playercache->HasFlag(CACHE_PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
 					SendPacket(data);

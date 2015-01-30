@@ -52,7 +52,7 @@ class SpeedCheatDetector;
 #define PLAYER_ACTION_BUTTON_SIZE PLAYER_ACTION_BUTTON_COUNT * sizeof(uint32)
 
 #define MAX_SPEC_COUNT 2
-#define GLYPHS_COUNT 9 // 6 in 3.3.5a, isn't it 9 in cata? 
+#define GLYPHS_COUNT 9 //?
 
 #define PLAYER_LEVEL_CAP                85
 #define PLAYER_ARENA_MIN_LEVEL  70
@@ -118,9 +118,9 @@ enum Races
 	RACE_ICE_TROLL = 21,
 	RACE_WORGEN = 22,
 	RACE_GILNEAN = 23,
-	RACE_PANDAREN_N = 24,
-	RACE_PANDAREN_A = 25,
-	RACE_PANDAREN_H = 26
+	RACE_PANDAREN_NEUTRAL = 24,
+	RACE_PANDAREN_ALLIANCE = 25,
+	RACE_PANDAREN_HORDE = 26
 };
 
 enum PlayerStatus
@@ -488,7 +488,7 @@ struct CreateInfo_SkillStruct
 struct CreateInfo_ActionBarStruct
 {
 	uint32  button;
-	uint32  action; //VLack: Aspire has this as 32bit
+	uint32  action;
 	uint32  type;
 	uint32  misc;
 };

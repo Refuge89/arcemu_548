@@ -47,6 +47,7 @@ Object::Object() : m_position(0, 0, 0, 0), m_spawnLocation(0, 0, 0, 0)
 	m_swimSpeed = 4.722222f;
 	m_backSwimSpeed = 2.5f;
 	m_turnRate = M_PI_FLOAT;
+	m_pitchRate = 8.0f;
 
 	m_phase = 1; //Set the default phase: 00000000 00000000 00000000 00000001
 
@@ -314,6 +315,7 @@ uint32 Object::BuildValuesUpdateBlockForPlayer(ByteBuffer* buf, UpdateMask* mask
 
 uint32 TimeStamp();
 
+// todo rename flags, flags2, moveflags2
 void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2, Player* target)
 {
 	uint16 moveflags2 = 0;
@@ -357,7 +359,6 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 	data->WriteBit(flags & UPDATEFLAG_POSITION);
 	data->WriteBit(0);
 	data->WriteBit(flags & UPDATEFLAG_HAS_POSITION);
-
 
 	Player* pThis = NULL;
 		MovementInfo* moveinfo = NULL;
@@ -486,8 +487,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 		*data << uint32(0);
 		*data << m_swimSpeed;
 		data->WriteByteSeq(guid[7]);
-		*data << float(8);
-		*data << self->GetPositionX();// m_position.x);
+		*data << float(m_pitchRate);
+		*data << self->GetPositionX(); // m_position.x);
 
 		if (!G3D::fuzzyEq(GetOrientation(), 0.0f)) // do we need this check here?
 			*data << m_position.o;
@@ -552,6 +553,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 	{
 		if (IsGameObject())
 			*data << TO< GameObject* >(this)->m_rotation;
+		else
+			*data << uint64(0); // we shouldn't get here, but just in case
 	}
 }
 

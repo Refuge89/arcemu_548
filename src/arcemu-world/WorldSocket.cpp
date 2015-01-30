@@ -17,16 +17,11 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-// Class WorldSocket - Main network code functions, handles
-// reading/writing of all packets.
-
-//!!! todo: cleanup in packets, remove useless comments
 
 #include "StdAfx.h"
 #include "AuthCodes.h"
 
-
-#define ECHO_PACKET_LOG_TO_CONSOLE 1
+//#define ECHO_PACKET_LOG_TO_CONSOLE 1
 
 #pragma pack(push, 1)
 
@@ -330,7 +325,7 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 	*recvPacket >> AuthDigest[5];
 	*recvPacket >> AuthDigest[6];
 	*recvPacket >> AuthDigest[8];
-	mClientBuild = recvPacket->read<uint16>();
+	*recvPacket >> mClientBuild;
 	*recvPacket >> AuthDigest[17];
 	*recvPacket >> AuthDigest[7];
 	*recvPacket >> AuthDigest[13];
@@ -374,8 +369,6 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	if (error != 0 || pAuthenticationPacket == NULL)
 	{
 		LOG_ERROR("Something happened wrong @ the logon server\n");
-		// something happened wrong @ the logon server
-		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x0D");
 		SendAuthResponseError(AUTH_FAILED);
 		return;
 	}
@@ -423,8 +416,6 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 		// we must send authentication failed here.
 		// the stupid newb can relog his client.
 		// otherwise accounts dupe up and disasters happen.
-		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x15");
-		//printf("Auth failed\n");
 		SendAuthResponseError(AUTH_UNKNOWN_ACCOUNT); // auth failed
 		return;
 	}
@@ -534,7 +525,6 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	else
 	{
 		SendAuthResponseError(AUTH_REJECT);
-		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x0E"); // AUTH_REJECT = 14
 		Disconnect();
 	}
 
@@ -557,6 +547,7 @@ void WorldSocket::Authenticate()
 	cdata << uint32(18414);
 	SendPacket(&cdata);
 
+	//!!! todo addon info packet
 	//sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
 	mSession->_latency = _latency;
 
@@ -760,7 +751,6 @@ void WorldSocket::OnRead()
 		break;
 		case MSG_WOW_CONNECTION:
 		{
-			//printf("Client to server\n");
 			HandleWoWConnection(Packet);      // new 4.x
 		}
 		break;

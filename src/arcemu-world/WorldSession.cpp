@@ -18,10 +18,6 @@
  *
  */
 
-//
-// WorldSession.cpp
-//
-
 #include "StdAfx.h"
 
 OpcodeHandler WorldPacketHandlers[NUM_MSG_TYPES];

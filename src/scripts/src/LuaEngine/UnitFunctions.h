@@ -1940,7 +1940,7 @@ class LuaUnit
 		{
 			int val = luaL_checkint(L, 1);
 			if(ptr != NULL)
-				ptr->SetUInt32Value(UNIT_FIELD_POWER1, val);
+				ptr->SetUInt32Value(UNIT_FIELD_POWER + 1, val);
 			return 0;
 		}
 

@@ -1123,7 +1123,6 @@ bool Player::Create(WorldPacket & data)
 	sHookInterface.OnCharacterCreate(this);
 	load_health = GetHealth();
 	load_mana = GetPower(POWER_TYPE_MANA);
-	LOG_ERROR("RETURNING TRUE");
 	return true;
 }
 
@@ -2308,9 +2307,16 @@ void Player::addSpell(uint32 spell_id)
 	mSpells.insert(spell_id);
 	if (IsInWorld())
 	{
-		WorldPacket data(SMSG_LEARNED_SPELL, 6);
-		data << uint32(spell_id);
-		data << uint32(0);
+		WorldPacket data(SMSG_LEARNED_SPELL, 8);
+
+		uint32 spellCount = 1;
+
+		data.WriteBits(spellCount, 22);
+		data.WriteBit(0);
+
+		for(uint32 i = 0; i < spellCount; ++i)
+			data << uint32(spell_id);
+
 		m_session->SendPacket(&data);
 	}
 
@@ -10400,6 +10406,8 @@ void Player::_AddSkillLine(uint32 SkillLine, uint32 Curr_sk, uint32 Max_sk)
 }
 
 //!!! todo: update skill fields, so we can get skill_langs to work !!!
+// PLAYER_FIELD_SKILL_MAX_RANKS == PLAYER_SKILL_MAX_RANK_0
+// PLAYER_FIELD_SKILL_RANKS == PLAYER_SKILL_RANK_0
 void Player::_UpdateSkillFields()
 {
 	uint32 f = PLAYER_SKILL_RANK_0;     // field
@@ -10432,7 +10440,7 @@ void Player::_UpdateSkillFields()
 		}
 		else
 		{
-			SetUInt32Value(f++, itr->first);
+			SetUInt32Value(f++, itr->first); // skill id
 #ifdef ENABLE_ACHIEVEMENTS
 			m_achievementMgr.UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILL_LEVEL, itr->second.Skill->id, itr->second.MaximumValue / 75, 0);
 #endif
