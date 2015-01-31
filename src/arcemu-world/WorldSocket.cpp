@@ -385,6 +385,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	recvData >> AccountID >> AccountName >> GMFlags >> AccountFlags;
 
 	ForcedPermissions = sLogonCommHandler.GetForcedPermissions(AccountName);
+
 	if (ForcedPermissions != NULL)
 		GMFlags.assign(ForcedPermissions->c_str());
 
@@ -547,8 +548,7 @@ void WorldSocket::Authenticate()
 	cdata << uint32(18414);
 	SendPacket(&cdata);
 
-	//!!! todo addon info packet
-	//sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
+	sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
 	mSession->_latency = _latency;
 
 	delete pAuthenticationPacket;

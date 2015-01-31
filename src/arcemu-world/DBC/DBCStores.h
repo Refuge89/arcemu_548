@@ -22,8 +22,6 @@
 
 #pragma pack(push,1)
 
-
-
 struct WorldSafeLocsEntry
 {
 	uint32	ID;
@@ -2342,7 +2340,6 @@ struct NameGenEntry
 	uint32 gender;
 };
 
-
 #pragma pack(pop)
 
 ARCEMU_INLINE float GetRadius(SpellRadius* radius)
@@ -2796,7 +2793,7 @@ extern SERVER_DECL DBCStorage<GtBarberShopCostBaseEntry>	dbcBarberShopCostStore;
 extern SERVER_DECL DBCStorage<GemPropertyEntry>				dbcGemProperty;
 extern SERVER_DECL DBCStorage<ItemSetEntry>					dbcItemSet;
 extern SERVER_DECL DBCStorage<Lock>							dbcLock;
-extern SERVER_DECL DBCStorage<NameGenEntry>                 sNameGenStore;
+extern SERVER_DECL DBCStorage<NameGenEntry>                 dbcNameGen;
 
 extern SERVER_DECL DBCStorage<SpellEntry>					dbcSpell;
 extern SERVER_DECL DBCStorage<SpellDuration>				dbcSpellDuration;
